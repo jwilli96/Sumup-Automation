@@ -22,5 +22,7 @@ jobs:
           pip install -r requirements.txt  # Install dependencies if you have them
 
       - name: Run the script
+        env:
+          SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}  # Pass the secret as an environment variable
         run: |
-          python PreviousMonthScript.py  # Replace with your script filename
+          python TotalSales.py  # Replace with your script filename
