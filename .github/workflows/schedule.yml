@@ -2,8 +2,16 @@ name: Run SumUp Data Script
 
 on:
   schedule:
-    # Runs every hour between 12 PM and 5 PM, from Thursday to Monday
-    - cron: '0 12-17 * * 4-7'  # Thursday (4) to Monday (7), every hour from 12 PM to 5 PM
+    # Run every hour between 12 PM and 5 PM on Thursday
+    - cron: '0 12,13,14,15,16,17 * * 4'
+    # Run every hour between 12 PM and 5 PM on Friday
+    - cron: '0 12,13,14,15,16,17 * * 5'
+    # Run every hour between 12 PM and 5 PM on Saturday
+    - cron: '0 12,13,14,15,16,17 * * 6'
+    # Run every hour between 12 PM and 5 PM on Sunday
+    - cron: '0 12,13,14,15,16,17 * * 7'
+    # Run every hour between 12 PM and 5 PM on Monday
+    - cron: '0 12,13,14,15,16,17 * * 1'
 
 jobs:
   run-script:
