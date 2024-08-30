@@ -2,7 +2,8 @@ name: Run SumUp Data Script
 
 on:
   schedule:
-    - cron: '0 8 * * *'  # Runs daily at 8 AM UTC
+    # Runs every hour between 12 PM and 5 PM, from Thursday to Monday
+    - cron: '0 12-17 * * 4-7'  # Thursday (4) to Monday (7), every hour from 12 PM to 5 PM
 
 jobs:
   run-script:
