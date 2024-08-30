@@ -1,0 +1,26 @@
+name: Run SumUp Data Script
+
+on:
+  schedule:
+    - cron: '0 8 * * *'  # Runs daily at 8 AM UTC
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'  # Replace with your required Python version
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt  # Install dependencies if you have them
+
+      - name: Run the script
+        run: |
+          python PreviousMonthScript.py  # Replace with your script filename
