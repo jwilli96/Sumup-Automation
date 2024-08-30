@@ -3,15 +3,15 @@ name: Run SumUp Data Script
 on:
   schedule:
     # Run every hour between 12 PM and 5 PM on Thursday
-    - cron: '0 12,13,14,15,16,17 * * 4'
+    - cron: '0 12-17 * * 4'
     # Run every hour between 12 PM and 5 PM on Friday
-    - cron: '0 12,13,14,15,16,17 * * 5'
+    - cron: '0 12-17 * * 5'
     # Run every hour between 12 PM and 5 PM on Saturday
-    - cron: '0 12,13,14,15,16,17 * * 6'
+    - cron: '0 12-17 * * 6'
     # Run every hour between 12 PM and 5 PM on Sunday
-    - cron: '0 12,13,14,15,16,17 * * 7'
+    - cron: '0 12-17 * * 0'  # Sunday is 0 in GitHub Actions' cron syntax
     # Run every hour between 12 PM and 5 PM on Monday
-    - cron: '0 12,13,14,15,16,17 * * 1'
+    - cron: '0 12-17 * * 1'
 
 jobs:
   run-script:
