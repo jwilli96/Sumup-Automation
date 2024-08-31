@@ -6,9 +6,6 @@ from datetime import datetime, timezone
 # Access API key from environment variable
 api_key = os.getenv('SUMUP_API_KEY')
 
-# Example of making a request using the API key
-response = requests.get('https://api.sumup.com/endpoint', headers={'Authorization': f'Bearer {api_key}'})
-
 if api_key:
     print("API key is loaded successfully.")
 else:
@@ -92,26 +89,21 @@ if all_transactions:
     df = df[['date', 'time', 'day_of_week', 'amount']]
     
     # Directory where you want to save the CSV file
-    save_directory = 'data'  # Changed from absolute path to relative path
+    save_directory = 'data'
 
     # Create the directory if it does not exist
     os.makedirs(save_directory, exist_ok=True)
     
-    # Generate the full file path
     csv_filename = f"TotalSales_{datetime.now().strftime('%Y%m%d')}.csv"
+
+    # Generate the full file path
     full_path = os.path.join(save_directory, csv_filename)
 
     # Write the DataFrame to a CSV file with proper formatting
     df.to_csv(full_path, index=False)
 
-    # Debugging output
+    # Debugging information
     print(f"Transactions exported to {full_path}")
-
-    # Verify file creation and permissions
-    if os.path.isfile(full_path):
-        print(f"File '{full_path}' created successfully.")
-        print(f"File size: {os.path.getsize(full_path)} bytes")
-    else:
-        print(f"Failed to create file '{full_path}'.")
+    print(f"File size: {os.path.getsize(full_path)} bytes")
 else:
     print("No transactions found for the specified date range.")
