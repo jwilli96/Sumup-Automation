@@ -4,12 +4,12 @@ from google.oauth2 import service_account
 from datetime import datetime, timezone
 import os
 
-print("Looking for credentials at:", os.path.expanduser('~/credentials.json'))
+# Set the correct path for the credentials file
+credentials_path = '/home/runner/credentials.json'
 
-# Use environment variable for credentials file path
-credentials_path = os.path.expanduser('~/credentials.json')
+print("Looking for credentials at:", credentials_path)
 
-# Initialize BigQuery client using credentials from environment variable
+# Initialize BigQuery client using credentials from the file
 credentials = service_account.Credentials.from_service_account_file(credentials_path)
 client = bigquery.Client(credentials=credentials, project='sumup-integration')
 
