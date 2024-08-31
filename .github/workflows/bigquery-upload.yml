@@ -25,16 +25,12 @@ jobs:
         pip install pandas google-cloud-bigquery google-auth
 
     - name: Set Google Cloud Credentials as Environment Variable
-      run: |
-        echo "Setting GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable."
       env:
         GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-
-    - name: Verify environment variable
-      run: |
-        echo "Printing environment variable length for verification:"
-        echo ${#GOOGLE_APPLICATION_CREDENTIALS_JSON}
+      run: echo "Google Cloud credentials set."
 
     - name: Run SalesToBigQuery script
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
       run: python SalesToBigQuery.py
       working-directory: /home/runner/work/Sumup-Automation/Sumup-Automation
