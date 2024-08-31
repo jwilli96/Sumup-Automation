@@ -24,11 +24,11 @@ jobs:
           pwd
           echo "Directory contents:"
           ls -la
-
+          
       - name: List files in 'data' directory
         run: |
-        echo "Contents of the data directory:"
-        ls -la data
+          echo "Contents of the data directory:"
+          ls -la data
 
       - name: Install dependencies
         run: |
