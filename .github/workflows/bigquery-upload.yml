@@ -1,0 +1,33 @@
+name: Upload Sales Data to BigQuery
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'  # Runs every 30 minutes (adjust as needed)
+  workflow_dispatch:
+
+jobs:
+  upload-to-bigquery:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          set -x
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || { echo 'Dependency installation failed'; exit 1; }
+          pip install google-cloud-bigquery || { echo 'BigQuery library installation failed'; exit 1; }
+
+      - name: Run SalesToBigQuery script
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+        run: |
+          set -x
+          python SalesToBigQuery.py || { echo 'BigQuery upload failed'; exit 2; }
