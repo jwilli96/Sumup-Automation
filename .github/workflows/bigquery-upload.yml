@@ -32,6 +32,12 @@ jobs:
     - name: Create data directory
       run: mkdir -p data
 
+    - name: Create a dummy CSV file
+      run: |
+        echo "date,time,day_of_week,amount" > data/TotalSales_$(date +'%Y%m%d').csv
+        echo "2024-08-31,10:00:00,Saturday,100.50" >> data/TotalSales_$(date +'%Y%m%d').csv
+        echo "2024-08-31,11:00:00,Saturday,200.75" >> data/TotalSales_$(date +'%Y%m%d').csv
+
     - name: Run SalesToBigQuery script
       env:
         GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
