@@ -18,6 +18,13 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Print Directory Structure
+        run: |
+          echo "Current working directory:"
+          pwd
+          echo "Directory contents:"
+          ls -la
+
       - name: Install dependencies
         run: |
           set -x
