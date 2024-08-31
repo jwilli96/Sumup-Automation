@@ -2,7 +2,7 @@ name: Upload Sales Data to BigQuery
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # Runs every 30 minutes (adjust as needed)
+    - cron: '*/600 * * * *'  # Runs every 30 minutes (adjust as needed)
   workflow_dispatch:
 
 jobs:
@@ -25,15 +25,13 @@ jobs:
           pip install -r requirements.txt || { echo 'Dependency installation failed'; exit 1; }
           pip install google-cloud-bigquery || { echo 'BigQuery library installation failed'; exit 1; }
 
-      - name: Set up Google Cloud Credentials
+      - name: Set up Google Cloud credentials
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         run: |
-          echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}" > $HOME/credentials.json
-        shell: bash
-        
-      - name: Verify credentials file
-        run: |
-          ls -l $HOME/credentials.json
-          cat $HOME/credentials.json
+          set -x
+          echo "$GOOGLE_APPLICATION_CREDENTIALS" > $HOME/credentials.json
+          export GOOGLE_APPLICATION_CREDENTIALS=$HOME/credentials.json
 
       - name: Run SalesToBigQuery script
         env:
