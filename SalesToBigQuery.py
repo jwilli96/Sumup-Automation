@@ -21,13 +21,12 @@ csv_filename = f"TotalSales_{datetime.now().strftime('%Y%m%d')}.csv"
 save_directory = 'data'
 full_path = os.path.join(save_directory, csv_filename)
 
-print(f"Checking if directory '{save_directory}' exists:")
+print("Checking if directory 'data' exists:")
+print(f"Directory exists: {'Yes' if os.path.isdir(save_directory) else 'No'}")
+
 print(f"Full path to CSV file: {full_path}")
 
-if not os.path.exists(save_directory):
-    print(f"Directory '{save_directory}' does not exist. Exiting script.")
-    exit(1)
-
+# Print the directory contents
 print("Directory contents:")
 for root, dirs, files in os.walk(save_directory):
     for name in files:
@@ -37,7 +36,10 @@ if not os.path.isfile(full_path):
     print(f"CSV file '{full_path}' not found. Exiting script.")
     exit(1)
 
-df = pd.read_csv(full_path)
-
-# Proceed with your BigQuery upload logic
-# ...
+try:
+    df = pd.read_csv(full_path)
+    print("CSV file loaded successfully.")
+    # Continue with your BigQuery upload logic
+except Exception as e:
+    print(f"Failed to load CSV file: {e}")
+    exit(1)
