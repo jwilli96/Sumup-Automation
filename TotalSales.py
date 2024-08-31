@@ -10,24 +10,16 @@ if api_key:
     print("API key is loaded successfully.")
 else:
     print("API key is missing.")
-    exit(1)  # Exit if API key is missing
+    exit(1)
 
-# Base URL for SumUp API
 BASE_URL = 'https://api.sumup.com/v0.1'
-
-# Set up headers with your API key for authorization
 headers = {
     'Authorization': f'Bearer {api_key}'
 }
 
-# Define the date range from 2023-12-03 to today
 start_date = datetime(2023, 12, 3, tzinfo=timezone.utc)
 end_date = datetime.now(timezone.utc)
-
-# Example API endpoint to get transactions within a date range
 endpoint = f'{BASE_URL}/me/transactions/history'
-
-# Parameters to filter transactions by date range
 params = {
     'from': start_date.strftime('%Y-%m-%d'),
     'to': end_date.strftime('%Y-%m-%d')
@@ -61,15 +53,12 @@ while True:
 
 if all_transactions:
     df = pd.DataFrame(all_transactions)
-
     df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_convert('UTC')
     df = df[df['status'] == 'SUCCESSFUL']
     df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
-
     df['date'] = df['timestamp'].dt.strftime('%Y-%m-%d')
     df['time'] = df['timestamp'].dt.strftime('%H:%M:%S')
     df['day_of_week'] = df['timestamp'].dt.strftime('%A')
-
     df = df[['date', 'time', 'day_of_week', 'amount']]
 
     save_directory = 'data'
@@ -77,6 +66,8 @@ if all_transactions:
 
     csv_filename = f"TotalSales_{datetime.now().strftime('%Y%m%d')}.csv"
     full_path = os.path.join(save_directory, csv_filename)
+
+    print(f"Saving CSV to {full_path}")
 
     try:
         df.to_csv(full_path, index=False)
