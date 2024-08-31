@@ -20,20 +20,22 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3  # Updated to v3 to support newer Node.js versions
+        uses: actions/checkout@v3  # Using the latest version
 
       - name: Set up Python
-        uses: actions/setup-python@v4  # Updated to v4 to support newer Node.js versions
+        uses: actions/setup-python@v4  # Using the latest version
         with:
           python-version: '3.12'  # Replace with your required Python version
 
       - name: Install dependencies
         run: |
+          set -x  # Enable debugging for shell commands
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Verify API Key
         run: |
+          set -x  # Enable debugging for shell commands
           echo "Checking if API key is loaded..."
           if [ -z "$SUMUP_API_KEY" ]; then
             echo "API key is missing or not set correctly."
@@ -45,8 +47,14 @@ jobs:
         env:
           SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
 
+      - name: Debug - List Files in Repository
+        run: |
+          set -x  # Enable debugging for shell commands
+          ls -la   # List all files to confirm if the script exists
+
       - name: Run the script
         env:
           SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
         run: |
-          python TotalSales.py
+          set -x  # Enable debugging for shell commands
+          python TotalSales.py  # Replace with your script filename
