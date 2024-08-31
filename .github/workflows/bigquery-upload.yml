@@ -28,10 +28,12 @@ jobs:
         echo "Writing Google Application Credentials to $HOME/credentials.json"
         echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}" > $HOME/credentials.json
         echo "Credentials file created at $HOME/credentials.json"
-        echo "Listing files in $HOME directory:"
+        echo "Directory contents of $HOME:"
         ls -l $HOME
-        echo "Contents of the credentials file (first 100 lines):"
-        head -n 100 $HOME/credentials.json
+        echo "Printing directory of credentials file:"
+        dirname $HOME/credentials.json
+        echo "Contents of the credentials file (first 1000 lines):"
+        head -n 1000 $HOME/credentials.json
       env:
         GOOGLE_APPLICATION_CREDENTIALS: $HOME/credentials.json
 
