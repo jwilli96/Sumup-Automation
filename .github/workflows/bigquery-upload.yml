@@ -2,7 +2,7 @@ name: Upload Sales Data to BigQuery
 
 on:
   schedule:
-    - cron: '*/30 * * * *'  # Runs every 30 minutes (adjust as needed)
+    - cron: '*/600 * * * *'  # Runs every 30 minutes (adjust as needed)
   workflow_dispatch:
 
 jobs:
