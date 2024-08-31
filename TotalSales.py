@@ -6,9 +6,6 @@ from datetime import datetime, timezone
 # Access API key from environment variable
 api_key = os.getenv('SUMUP_API_KEY')
 
-# Example of making a request using the API key
-response = requests.get('https://api.sumup.com/endpoint', headers={'Authorization': f'Bearer {api_key}'})
-
 if api_key:
     print("API key is loaded successfully.")
 else:
@@ -39,15 +36,11 @@ params = {
 all_transactions = []
 
 while True:
-    # Make a GET request to the SumUp API
     response = requests.get(endpoint, headers=headers, params=params)
 
-    # Check if the request was successful
     if response.status_code == 200:
-        # Parse the JSON response
         transactions_response = response.json()
 
-        # Access the transactions data under the 'items' key
         if 'items' in transactions_response:
             transactions = transactions_response['items']
             all_transactions.extend(transactions)
@@ -55,56 +48,40 @@ while True:
             print("The 'items' key was not found in the response.")
             break
 
-        # Check if there is a 'next' link for pagination
         next_link = next((link for link in transactions_response.get('links', []) if link['rel'] == 'next'), None)
         if next_link:
-            # Update endpoint with the next link's href
             endpoint = f"{BASE_URL}/me/transactions/history?{next_link['href']}"
-            # Clear params to prevent conflict with the 'next' link query
             params = {}
         else:
-            # No more pages to fetch
             break
     else:
         print(f"Failed to retrieve transactions. Status code: {response.status_code}")
         print("Response:", response.text)
         break
 
-# Proceed only if transactions are found
 if all_transactions:
     df = pd.DataFrame(all_transactions)
 
-    # Convert 'timestamp' column to datetime and set timezone to UTC
     df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_convert('UTC')
-    
-    # Filter transactions by successful status
     df = df[df['status'] == 'SUCCESSFUL']
-
-    # Filter transactions to ensure they fall within the correct date range
     df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
 
-    # Extract date, time, and day of the week from the timestamp
-    df['date'] = df['timestamp'].dt.strftime('%Y-%m-%d')  # Date in YYYY-MM-DD format
-    df['time'] = df['timestamp'].dt.strftime('%H:%M:%S')  # Time in HH:MM:SS format
-    df['day_of_week'] = df['timestamp'].dt.strftime('%A')  # Day of the week (e.g., Monday)
-    
-    # Select the required columns and rename them
+    df['date'] = df['timestamp'].dt.strftime('%Y-%m-%d')
+    df['time'] = df['timestamp'].dt.strftime('%H:%M:%S')
+    df['day_of_week'] = df['timestamp'].dt.strftime('%A')
+
     df = df[['date', 'time', 'day_of_week', 'amount']]
-    
-    # Directory where you want to save the CSV file
-    save_directory = 'data'  # Changed from absolute path to relative path
 
-    # Create the directory if it does not exist
+    save_directory = 'data'
     os.makedirs(save_directory, exist_ok=True)
-    
-    csv_filename = f"TotalSales_{datetime.now().strftime('%Y%m%d')}.csv"
 
-    # Generate the full file path
+    csv_filename = f"TotalSales_{datetime.now().strftime('%Y%m%d')}.csv"
     full_path = os.path.join(save_directory, csv_filename)
 
-    # Write the DataFrame to a CSV file with proper formatting
-    df.to_csv(full_path, index=False)
-
-    print(f"Transactions exported to {full_path}")
+    try:
+        df.to_csv(full_path, index=False)
+        print(f"Transactions exported to {full_path}")
+    except Exception as e:
+        print(f"Failed to write CSV file: {e}")
 else:
     print("No transactions found for the specified date range.")
