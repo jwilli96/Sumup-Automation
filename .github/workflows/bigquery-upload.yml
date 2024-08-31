@@ -24,9 +24,18 @@ jobs:
         pip install -r requirements.txt
 
     - name: Write Google Application Credentials to file
-      run: echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}" > $HOME/credentials.json
-
-    - name: Run SalesToBigQuery script
+      run: |
+        echo "Writing Google Application Credentials to $HOME/credentials.json"
+        echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}" > $HOME/credentials.json
+        echo "Credentials file created at $HOME/credentials.json"
+        echo "Listing files in $HOME directory:"
+        ls -l $HOME
+        echo "Contents of the credentials file (first 100 lines):"
+        head -n 100 $HOME/credentials.json
       env:
         GOOGLE_APPLICATION_CREDENTIALS: $HOME/credentials.json
+
+    - name: Run SalesToBigQuery script
       run: python SalesToBigQuery.py
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: $HOME/credentials.json
