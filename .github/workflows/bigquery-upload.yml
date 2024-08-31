@@ -26,11 +26,10 @@ jobs:
           pip install google-cloud-bigquery || { echo 'BigQuery library installation failed'; exit 1; }
 
       - name: Set up Google Cloud credentials
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         run: |
           set -x
           echo "$GOOGLE_APPLICATION_CREDENTIALS" > $HOME/credentials.json
+          cat $HOME/credentials.json  # Debugging: Print contents to confirm it's correctly written
           export GOOGLE_APPLICATION_CREDENTIALS=$HOME/credentials.json
 
       - name: Run SalesToBigQuery script
