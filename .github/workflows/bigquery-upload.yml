@@ -29,8 +29,8 @@ jobs:
         echo "Credentials file created at /home/runner/credentials.json"
         ls -l /home/runner/credentials.json
         echo "Contents of /home/runner/credentials.json:"
-        cat /home/runner/credentials.json
-
+        cat /home/runner/credentials.json || echo "Unable to display credentials content"
+        
     - name: Verify credentials file
       run: |
         echo "Current working directory: $(pwd)"
@@ -38,8 +38,16 @@ jobs:
         ls -l $HOME
         echo "Contents of current directory:"
         ls -l
+        echo "Listing /home/runner contents:"
+        ls -l /home/runner
         echo "Python version:"
         python --version
+        echo "Environment variables:"
+        env
+        echo "Checking file permissions for credentials file:"
+        ls -l /home/runner/credentials.json
+        echo "Attempting to read credentials file with Python:"
+        python -c "with open('/home/runner/credentials.json', 'r') as f: print(f.read())"
 
     - name: Run SalesToBigQuery script
       run: python SalesToBigQuery.py
