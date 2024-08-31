@@ -23,31 +23,17 @@ jobs:
         pip install --upgrade pip
         pip install google-cloud-bigquery google-auth
 
-    - name: Set up Google Cloud Credentials
+    # Set the GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable
+    - name: Set Google Cloud Credentials as Environment Variable
       run: |
-        echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}" > /home/runner/credentials.json
-        echo "Credentials file created at /home/runner/credentials.json"
-        ls -l /home/runner/credentials.json
-        echo "Contents of /home/runner/credentials.json:"
-        cat /home/runner/credentials.json || echo "Unable to display credentials content"
-        
-    - name: Verify credentials file
+        echo "Setting GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable."
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+
+    - name: Verify environment variable
       run: |
-        echo "Current working directory: $(pwd)"
-        echo "Contents of $HOME:"
-        ls -l $HOME
-        echo "Contents of current directory:"
-        ls -l
-        echo "Listing /home/runner contents:"
-        ls -l /home/runner
-        echo "Python version:"
-        python --version
-        echo "Environment variables:"
-        env
-        echo "Checking file permissions for credentials file:"
-        ls -l /home/runner/credentials.json
-        echo "Attempting to read credentials file with Python:"
-        python -c "with open('/home/runner/credentials.json', 'r') as f: print(f.read())"
+        echo "Printing environment variable length for verification:"
+        echo ${#GOOGLE_APPLICATION_CREDENTIALS_JSON}
 
     - name: Run SalesToBigQuery script
       run: python SalesToBigQuery.py
