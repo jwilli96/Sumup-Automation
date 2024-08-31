@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import os
 
 # Use environment variable for credentials file path
-credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+credentials_path = os.path.expanduser('~/credentials.json')
 
 # Initialize BigQuery client using credentials from environment variable
 credentials = service_account.Credentials.from_service_account_file(credentials_path)
