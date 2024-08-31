@@ -21,6 +21,9 @@ csv_filename = f"TotalSales_{datetime.now().strftime('%Y%m%d')}.csv"
 save_directory = 'data'
 full_path = os.path.join(save_directory, csv_filename)
 
+print(f"Checking if directory '{save_directory}' exists:")
+print(f"Full path to CSV file: {full_path}")
+
 if not os.path.exists(save_directory):
     print(f"Directory '{save_directory}' does not exist. Exiting script.")
     exit(1)
