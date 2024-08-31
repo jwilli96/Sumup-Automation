@@ -30,26 +30,22 @@ save_directory = 'data'
 # Full path to the CSV file
 full_path = os.path.join(save_directory, csv_filename)
 
+# Check if directory exists
 print(f"Checking if directory '{save_directory}' exists:")
-if os.path.exists(save_directory):
-    print(f"Directory exists: Yes")
-else:
-    print(f"Directory exists: No")
+print(f"Directory exists: {'Yes' if os.path.exists(save_directory) else 'No'}")
 
+# Check if CSV file exists
 print(f"Full path to CSV file: {full_path}")
-
-print(f"Directory contents:")
+print("Directory contents:")
 for item in os.listdir(save_directory):
     print(f"  {item}")
 
-# Check if CSV file exists
 if not os.path.isfile(full_path):
     print(f"CSV file '{full_path}' not found. Exiting script.")
     exit(1)
 
 # Load your CSV file into a DataFrame
 df = pd.read_csv(full_path)
-
 print(f"CSV file '{full_path}' loaded successfully.")
 print(f"DataFrame head:")
 print(df.head())
