@@ -1,4 +1,4 @@
-name: Run SalesToBigQuery Script
+name: Sumup Automation
 
 on:
   push:
@@ -6,38 +6,41 @@ on:
       - main
 
 jobs:
-  build:
+  run-sales-to-bigquery:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout repository
       uses: actions/checkout@v3
 
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: '3.12'
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install --upgrade pip
+        pip install google-cloud-bigquery google-auth
 
-    - name: Write Google Application Credentials to file
+    - name: Set up Google Cloud Credentials
       run: |
-        echo "Writing Google Application Credentials to $HOME/credentials.json"
-        echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}" > $HOME/credentials.json
-        echo "Credentials file created at $HOME/credentials.json"
-        echo "Directory contents of $HOME:"
+        echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}" > /home/runner/credentials.json
+        echo "Credentials file created at /home/runner/credentials.json"
+        ls -l /home/runner/credentials.json
+        echo "Contents of /home/runner/credentials.json:"
+        cat /home/runner/credentials.json
+
+    - name: Verify credentials file
+      run: |
+        echo "Current working directory: $(pwd)"
+        echo "Contents of $HOME:"
         ls -l $HOME
-        echo "Printing directory of credentials file:"
-        dirname $HOME/credentials.json
-        echo "Contents of the credentials file (first 1000 lines):"
-        head -n 1000 $HOME/credentials.json
-      env:
-        GOOGLE_APPLICATION_CREDENTIALS: $HOME/credentials.json
+        echo "Contents of current directory:"
+        ls -l
+        echo "Python version:"
+        python --version
 
     - name: Run SalesToBigQuery script
       run: python SalesToBigQuery.py
-      env:
-        GOOGLE_APPLICATION_CREDENTIALS: $HOME/credentials.json
+      working-directory: /home/runner/work/Sumup-Automation/Sumup-Automation
