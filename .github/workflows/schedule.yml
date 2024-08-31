@@ -2,17 +2,12 @@ name: Run SumUp Data Script
 
 on:
   schedule:
-    # Run every hour between 12 PM and 5 PM on Thursday
     - cron: '0 12-17 * * 4'
-    # Run every hour between 12 PM and 5 PM on Friday
     - cron: '0 12-17 * * 5'
-    # Run every hour between 12 PM and 5 PM on Saturday
     - cron: '0 12-17 * * 6'
-    # Run every hour between 12 PM and 5 PM on Sunday
     - cron: '0 12-17 * * 0'
-    # Run every hour between 12 PM and 5 PM on Monday
     - cron: '0 12-17 * * 1'
-  workflow_dispatch:  # Allows manual triggering
+  workflow_dispatch:
 
 jobs:
   run-script:
@@ -25,11 +20,11 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.12'  # Use your required Python version
+          python-version: '3.12'
 
       - name: Install dependencies
         run: |
-          set -x  # Enable debugging for shell commands
+          set -x
           python -m pip install --upgrade pip
           pip install -r requirements.txt || { echo 'Dependency installation failed'; exit 1; }
 
@@ -50,7 +45,12 @@ jobs:
       - name: Debug - List Files in Repository
         run: |
           set -x
-          ls -la  # List all files in the repository to confirm the script exists
+          ls -la
+
+      - name: Create necessary directories
+        run: |
+          set -x
+          mkdir -p data  # Create directory if needed
 
       - name: Run the script
         env:
