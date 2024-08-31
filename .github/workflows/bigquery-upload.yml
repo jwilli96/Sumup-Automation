@@ -9,6 +9,7 @@ on:
 jobs:
   run-sales-to-bigquery:
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -21,9 +22,8 @@ jobs:
     - name: Install dependencies
       run: |
         pip install --upgrade pip
-        pip install google-cloud-bigquery google-auth
+        pip install pandas google-cloud-bigquery google-auth
 
-    # Set the GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable
     - name: Set Google Cloud Credentials as Environment Variable
       run: |
         echo "Setting GOOGLE_APPLICATION_CREDENTIALS_JSON environment variable."
