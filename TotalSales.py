@@ -13,7 +13,7 @@ if api_key:
     print("API key is loaded successfully.")
 else:
     print("API key is missing.")
-
+    exit(1)  # Exit if API key is missing
 
 # Base URL for SumUp API
 BASE_URL = 'https://api.sumup.com/v0.1'
@@ -92,7 +92,10 @@ if all_transactions:
     df = df[['date', 'time', 'day_of_week', 'amount']]
     
     # Directory where you want to save the CSV file
-    save_directory = r"C:\Users\James.Williams\Sumup\Sales"
+    save_directory = 'data'  # Changed from absolute path to relative path
+
+    # Create the directory if it does not exist
+    os.makedirs(save_directory, exist_ok=True)
     
     csv_filename = f"TotalSales_{datetime.now().strftime('%Y%m%d')}.csv"
 
