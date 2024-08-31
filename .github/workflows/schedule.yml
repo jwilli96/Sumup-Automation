@@ -9,9 +9,10 @@ on:
     # Run every hour between 12 PM and 5 PM on Saturday
     - cron: '0 12-17 * * 6'
     # Run every hour between 12 PM and 5 PM on Sunday
-    - cron: '0 12-17 * * 0'  # Sunday is 0 in GitHub Actions' cron syntax
+    - cron: '0 12-17 * * 0'
     # Run every hour between 12 PM and 5 PM on Monday
     - cron: '0 12-17 * * 1'
+  workflow_dispatch:  # Add this line to enable manual trigger
 
 jobs:
   run-script:
