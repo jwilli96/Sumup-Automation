@@ -1,40 +1,32 @@
-name: Upload Sales Data to BigQuery
+name: Run SalesToBigQuery Script
 
 on:
-  schedule:
-    - cron: '*/600 * * * *'  # Runs every 30 minutes (adjust as needed)
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
-  upload-to-bigquery:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
 
-      - name: Install dependencies
-        run: |
-          set -x
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt || { echo 'Dependency installation failed'; exit 1; }
-          pip install google-cloud-bigquery || { echo 'BigQuery library installation failed'; exit 1; }
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
 
-      - name: Set up Google Cloud credentials
-        run: |
-          set -x
-          echo "$GOOGLE_APPLICATION_CREDENTIALS" > $HOME/credentials.json
-          cat $HOME/credentials.json  # Debugging: Print contents to confirm it's correctly written
-          export GOOGLE_APPLICATION_CREDENTIALS=$HOME/credentials.json
+    - name: Write Google Application Credentials to file
+      run: echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}" > $HOME/credentials.json
 
-      - name: Run SalesToBigQuery script
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: $HOME/credentials.json
-        run: |
-          set -x
-          python SalesToBigQuery.py || { echo 'BigQuery upload failed'; exit 2; }
+    - name: Run SalesToBigQuery script
+      env:
+        GOOGLE_APPLICATION_CREDENTIALS: $HOME/credentials.json
+      run: python SalesToBigQuery.py
