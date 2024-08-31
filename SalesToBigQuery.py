@@ -30,34 +30,29 @@ save_directory = 'data'
 # Full path to the CSV file
 full_path = os.path.join(save_directory, csv_filename)
 
-print("Checking if directory 'data' exists:")
-print(f"Directory exists: {'Yes' if os.path.isdir(save_directory) else 'No'}")
+print(f"Checking if directory '{save_directory}' exists:")
+if os.path.exists(save_directory):
+    print(f"Directory exists: Yes")
+else:
+    print(f"Directory exists: No")
 
 print(f"Full path to CSV file: {full_path}")
 
-# Print detailed directory contents
-print("Directory contents:")
-for root, dirs, files in os.walk(save_directory):
-    for name in files:
-        file_path = os.path.join(root, name)
-        print(f"File found: {file_path}")
+print(f"Directory contents:")
+for item in os.listdir(save_directory):
+    print(f"  {item}")
 
-# Check if file exists and check file permissions
+# Check if CSV file exists
 if not os.path.isfile(full_path):
     print(f"CSV file '{full_path}' not found. Exiting script.")
     exit(1)
 
-print(f"Checking file permissions for '{full_path}':")
-print(f"Readable: {'Yes' if os.access(full_path, os.R_OK) else 'No'}")
-print(f"Writable: {'Yes' if os.access(full_path, os.W_OK) else 'No'}")
-print(f"Executable: {'Yes' if os.access(full_path, os.X_OK) else 'No'}")
+# Load your CSV file into a DataFrame
+df = pd.read_csv(full_path)
 
-# Attempt to load the CSV file
-try:
-    df = pd.read_csv(full_path)
-    print("CSV file loaded successfully.")
-    # Proceed with the rest of your code
-    # ...
-except Exception as e:
-    print(f"Failed to load CSV file: {e}")
-    exit(1)
+print(f"CSV file '{full_path}' loaded successfully.")
+print(f"DataFrame head:")
+print(df.head())
+
+# Proceed with the rest of your code
+# ...
