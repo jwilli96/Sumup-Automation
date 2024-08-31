@@ -2,7 +2,7 @@ name: Run SumUp Data Script
 
 on:
   schedule:
-    - cron: '*/1 * * * *'  # Every 1 minute
+    - cron: '*/45 * * * *'  # Every 45 minute
   workflow_dispatch:
 
 jobs:
