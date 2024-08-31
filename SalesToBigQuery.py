@@ -28,6 +28,11 @@ if not os.path.exists(save_directory):
     print(f"Directory '{save_directory}' does not exist. Exiting script.")
     exit(1)
 
+print("Directory contents:")
+for root, dirs, files in os.walk(save_directory):
+    for name in files:
+        print(os.path.join(root, name))
+
 if not os.path.isfile(full_path):
     print(f"CSV file '{full_path}' not found. Exiting script.")
     exit(1)
