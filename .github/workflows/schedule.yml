@@ -31,6 +31,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt  # Install dependencies from requirements.txt
 
+      - name: Verify API Key
+        run: |
+          echo "Checking if API key is loaded..."
+          if [ -z "$SUMUP_API_KEY" ]; then
+            echo "API key is missing or not set correctly."
+            exit 1
+          else
+            echo "API key is loaded successfully."
+            echo "API key length: ${#SUMUP_API_KEY}"  # Print length for debugging
+          fi
+        env:
+          SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}  # Correctly reference the secret here
+
       - name: Run the script
         env:
           SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}  # Pass the secret as an environment variable
