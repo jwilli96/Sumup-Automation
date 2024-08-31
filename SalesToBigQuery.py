@@ -4,6 +4,8 @@ from google.oauth2 import service_account
 from datetime import datetime, timezone
 import os
 
+print("Looking for credentials at:", os.path.expanduser('~/credentials.json'))
+
 # Use environment variable for credentials file path
 credentials_path = os.path.expanduser('~/credentials.json')
 
