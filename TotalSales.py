@@ -74,5 +74,11 @@ if all_transactions:
         print(f"Transactions exported to {full_path}")
     except Exception as e:
         print(f"Failed to write CSV file: {e}")
+
+    # Print the directory contents for confirmation
+    print(f"Contents of '{save_directory}' directory:")
+    for root, dirs, files in os.walk(save_directory):
+        for name in files:
+            print(os.path.join(root, name))
 else:
     print("No transactions found for the specified date range.")
