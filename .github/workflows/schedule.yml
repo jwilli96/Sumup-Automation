@@ -3,7 +3,7 @@ name: Scheduled Workflow
 on:
   schedule:
     - cron: '0 0 * * *'  # Runs at midnight every day
-  workflow_dispatch:
+  workflow_dispatch:  # This enables the manual run option
 
 jobs:
   totalsales:
@@ -29,37 +29,16 @@ jobs:
     - name: Display CSV File Headers and Content
       run: |
         echo "Displaying the first 10 rows of the CSV file for debugging:"
-        head -n 10 data/TotalSales_$(date +'%Y%m%d').csv
+        head -n 10 data/TotalSales_$(date +%Y%m%d).csv
 
     - name: Display CSV File Headers and Content with Python
       run: |
         echo "Displaying the CSV headers and first 10 rows using Python:"
         python -c "
 import pandas as pd
-df = pd.read_csv('data/TotalSales_$(date +'%Y%m%d').csv')
+df = pd.read_csv('data/TotalSales_' + '$(date +%Y%m%d)' + '.csv')
 print('Headers:')
 print(df.columns.tolist())
 print('First 10 rows:')
 print(df.head(10))
 "
-
-  salestobigquery:
-    runs-on: ubuntu-latest
-    needs: totalsales
-
-    steps:
-    - name: Check out repository
-      uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-
-    - name: Run SalesToBigQuery.py
-      run: python SalesToBigQuery.py
