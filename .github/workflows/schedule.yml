@@ -24,11 +24,13 @@ jobs:
           pwd
           echo "Directory contents before script execution:"
           ls -la
+
       - name: Install dependencies
         run: |
           set -x
           python -m pip install --upgrade pip
           pip install -r requirements.txt || { echo 'Dependency installation failed'; exit 1; }
+
       - name: Verify API Key
         run: |
           set -x
@@ -49,12 +51,14 @@ jobs:
         run: |
           set -x
           python TotalSales.py || { echo 'Script execution failed'; exit 2; }
+
       - name: Print Directory Structure After Script Execution
         run: |
           echo "Current working directory after script execution:"
           pwd
           echo "Directory contents after script execution:"
           ls -la
+
       - name: Check if 'data' directory exists
         run: |
           echo "Checking if 'data' directory exists:"
@@ -63,7 +67,18 @@ jobs:
           else
             echo "'data' directory does not exist."
           fi
+
       - name: List files in 'data' directory
         run: |
           echo "Contents of the data directory (if it exists):"
           ls -la data || echo "'data' directory does not exist."
+
+      - name: Print CSV Headers
+        run: |
+          echo "Printing headers of the CSV file:"
+          head -n 1 data/TotalSales_20240901.csv || { echo 'Failed to read CSV headers'; exit 3; }
+
+      - name: Print First 10 Rows of CSV
+        run: |
+          echo "Printing the first 10 rows of the CSV file:"
+          head -n 10 data/TotalSales_20240901.csv || { echo 'Failed to read CSV content'; exit 4; }
