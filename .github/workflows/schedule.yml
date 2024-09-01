@@ -1,44 +1,69 @@
-name: Scheduled Workflow
+name: Run SumUp Data Script
 
 on:
   schedule:
-    - cron: '0 0 * * *'  # Runs at midnight every day
-  workflow_dispatch:  # This enables the manual run option
+    - cron: '*/15 * * * *'  # Every 15 minutes
+  workflow_dispatch:
 
 jobs:
-  totalsales:
+  run-script:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check out repository
-      uses: actions/checkout@v2
+      - name: Check out repository
+        uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'  # Use your specific Python version
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Print Directory Structure Before Script Execution
+        run: |
+          echo "Current working directory before script execution:"
+          pwd
+          echo "Directory contents before script execution:"
+          ls -la
+      - name: Install dependencies
+        run: |
+          set -x
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt || { echo 'Dependency installation failed'; exit 1; }
+      - name: Verify API Key
+        run: |
+          set -x
+          echo "Checking if API key is loaded..."
+          if [ -z "$SUMUP_API_KEY" ]; then
+            echo "API key is missing or not set correctly."
+            exit 1
+          else
+            echo "API key is loaded successfully."
+            echo "API key length: ${#SUMUP_API_KEY}"
+          fi
+        env:
+          SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
 
-    - name: Run TotalSales.py
-      run: python TotalSales.py
-
-    - name: Display CSV File Headers and Content
-      run: |
-        echo "Displaying the first 10 rows of the CSV file for debugging:"
-        head -n 10 data/TotalSales_$(date +%Y%m%d).csv
-
-    - name: Display CSV File Headers and Content with Python
-      run: |
-        echo "Displaying the CSV headers and first 10 rows using Python:"
-        python -c "
-import pandas as pd
-df = pd.read_csv('data/TotalSales_' + '$(date +%Y%m%d)' + '.csv')
-print('Headers:')
-print(df.columns.tolist())
-print('First 10 rows:')
-print(df.head(10))
-"
+      - name: Run the script
+        env:
+          SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
+        run: |
+          set -x
+          python TotalSales.py || { echo 'Script execution failed'; exit 2; }
+      - name: Print Directory Structure After Script Execution
+        run: |
+          echo "Current working directory after script execution:"
+          pwd
+          echo "Directory contents after script execution:"
+          ls -la
+      - name: Check if 'data' directory exists
+        run: |
+          echo "Checking if 'data' directory exists:"
+          if [ -d "data" ]; then
+            echo "'data' directory exists."
+          else
+            echo "'data' directory does not exist."
+          fi
+      - name: List files in 'data' directory
+        run: |
+          echo "Contents of the data directory (if it exists):"
+          ls -la data || echo "'data' directory does not exist."
