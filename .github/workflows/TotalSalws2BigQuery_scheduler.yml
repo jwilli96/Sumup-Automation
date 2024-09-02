@@ -13,13 +13,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Print Directory Structure Before Script Execution
-        run: |
-          echo "Current working directory before script execution:"
-          pwd
-          echo "Directory contents before script execution:"
-          ls -la
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -58,14 +51,24 @@ jobs:
           SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
+      - name: Print Directory Structure Before Script Execution
+        run: |
+          echo "Current working directory before script execution:"
+          pwd
+          echo "Directory contents before script execution:"
+          ls -la
+          echo "Contents of 'data' directory:"
+          ls -la data
+        continue-on-error: true
+
       - name: Run the script
         run: |
           set -x
-          if [ -f TotalSales2BigQuery.py ]; then
-            echo "File TotalSales2BigQuery.py found. Running script."
-            python TotalSales2BigQuery.py
+          if [ -f SalesToBigQuery.py ]; then
+            echo "File SalesToBigQuery.py found. Running script."
+            python SalesToBigQuery.py
           else
-            echo "Error: TotalSales2BigQuery.py not found."
+            echo "Error: SalesToBigQuery.py not found."
             exit 1
           fi
         env:
@@ -77,5 +80,7 @@ jobs:
           echo "Current working directory after script execution:"
           pwd
           echo "Directory contents after script execution:"
+          ls -la
+          echo "Contents of 'data' directory after script execution:"
           ls -la data
-        continue-on-error: true  # Continue even if the previous step fails
+        continue-on-error: true
