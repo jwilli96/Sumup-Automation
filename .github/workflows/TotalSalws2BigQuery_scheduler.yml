@@ -33,12 +33,12 @@ jobs:
           pip install google-cloud-bigquery google-auth google-auth-oauthlib google-auth-httplib2 || { echo 'Google Cloud dependencies installation failed'; exit 1; }
         env:
           SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
-          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
-      - name: Verify API Key
+      - name: Verify Environment Variables
         run: |
           set -x
-          echo "Checking if API key is loaded..."
+          echo "Checking if environment variables are loaded..."
           if [ -z "$SUMUP_API_KEY" ]; then
             echo "API key is missing or not set correctly."
             exit 1
@@ -46,13 +46,22 @@ jobs:
             echo "API key is loaded successfully."
             echo "API key length: ${#SUMUP_API_KEY}"
           fi
+          
+          if [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+            echo "Google Application Credentials JSON is missing or not set correctly."
+            exit 1
+          else
+            echo "Google Application Credentials JSON is loaded successfully."
+            echo "Credentials length: ${#GOOGLE_APPLICATION_CREDENTIALS}"
+          fi
         env:
           SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Run the script
         env:
           SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
-          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         run: |
           set -x
           python TotalSales2BigQuery.py || { echo 'Script execution failed'; exit 2; }
