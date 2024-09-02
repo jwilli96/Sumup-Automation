@@ -5,8 +5,14 @@ from datetime import datetime, timezone
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
-# Replace with your actual API key
-API_KEY = 'sup_sk_Wk70mu573MTAXfVsxNJIeUc9RqY25QyHh'
+# Access API key from environment variable
+api_key = os.getenv('SUMUP_API_KEY')
+
+if api_key:
+    print("API key is loaded successfully.")
+else:
+    print("API key is missing.")
+    exit(1)  # Exit if API key is missing
 
 # Base URL for SumUp API
 BASE_URL = 'https://api.sumup.com/v0.1'
@@ -85,7 +91,10 @@ if all_transactions:
     df = df[['date', 'time', 'day_of_week', 'amount']]
     
     # Directory where you want to save the CSV file
-    save_directory = r"C:\Users\James.Williams\Sumup\Sales"
+    save_directory = 'data'
+
+    # Create the directory if it does not exist
+    os.makedirs(save_directory, exist_ok=True)
     
     csv_filename = f"TotalSales_{datetime.now().strftime('%Y%m%d')}.csv"
 
@@ -94,12 +103,27 @@ if all_transactions:
 
     # Write the DataFrame to a CSV file with proper formatting
     df.to_csv(full_path, index=False)
-
+   
+    # Debugging information
+    print(f"Transactions exported to {full_path}")
+    print(f"File size: {os.path.getsize(full_path)} bytes")
+else:
+    print("No transactions found for the specified date range.")
     print(f"Transactions exported to {full_path}")
 
-    # Initialize BigQuery client
-    credentials = service_account.Credentials.from_service_account_file(r'C:\Users\James.Williams\Sumup\Credentials\ServiceAccountKey.json')
-    client = bigquery.Client(credentials=credentials, project='sumup-integration')
+    # Read credentials from environment variable
+    credentials_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
+
+if not credentials_json:
+    print("Credentials environment variable not found. Exiting script.")
+    exit(1)
+
+# Parse credentials from JSON string
+credentials_info = json.loads(credentials_json)
+
+# Initialize BigQuery client using parsed credentials
+credentials = service_account.Credentials.from_service_account_info(credentials_info)
+client = bigquery.Client(credentials=credentials, project='sumup-integration')
 
     # Load your CSV file into a DataFrame (if needed)
     df = pd.read_csv(full_path)
