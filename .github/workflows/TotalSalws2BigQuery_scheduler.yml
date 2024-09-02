@@ -13,17 +13,17 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.12'
-
       - name: Print Directory Structure Before Script Execution
         run: |
           echo "Current working directory before script execution:"
           pwd
           echo "Directory contents before script execution:"
           ls -la
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
 
       - name: Install dependencies
         run: |
@@ -59,12 +59,18 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Run the script
+        run: |
+          set -x
+          if [ -f TotalSales2BigQuery.py ]; then
+            echo "File TotalSales2BigQuery.py found. Running script."
+            python TotalSales2BigQuery.py
+          else
+            echo "Error: TotalSales2BigQuery.py not found."
+            exit 1
+          fi
         env:
           SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-        run: |
-          set -x
-          python TotalSales2.py
 
       - name: Print Directory Structure After Script Execution
         run: |
