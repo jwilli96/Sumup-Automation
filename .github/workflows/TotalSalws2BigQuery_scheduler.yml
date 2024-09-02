@@ -64,25 +64,4 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         run: |
           set -x
-          python TotalSales2BigQuery.py || { echo 'Script execution failed'; exit 2; }
-
-      - name: Print Directory Structure After Script Execution
-        run: |
-          echo "Current working directory after script execution:"
-          pwd
-          echo "Directory contents after script execution:"
-          ls -la
-
-      - name: Check if 'data' directory exists
-        run: |
-          echo "Checking if 'data' directory exists:"
-          if [ -d "data" ]; then
-            echo "'data' directory exists."
-          else
-            echo "'data' directory does not exist."
-          fi
-
-      - name: List files in 'data' directory
-        run: |
-          echo "Contents of the data directory (if it exists):"
-          ls -
+          python TotalSales2
