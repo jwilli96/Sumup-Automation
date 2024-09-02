@@ -64,4 +64,4 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         run: |
           set -x
-          python TotalSales2
+          python SalesToBigQuery.py
