@@ -1,4 +1,4 @@
-name: Run SumUp Data Script
+name: Run Dummy Data Script
 
 on:
   schedule:
@@ -23,23 +23,14 @@ jobs:
           set -x
           python -m pip install --upgrade pip
           pip install -r requirements.txt || { echo 'Dependency installation failed'; exit 1; }
-          pip install google-cloud-bigquery google-auth google-auth-oauthlib google-auth-httplib2 || { echo 'Google Cloud dependencies installation failed'; exit 1; }
+          pip install google-cloud-bigquery google-auth || { echo 'Google Cloud dependencies installation failed'; exit 1; }
         env:
-          SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Verify Environment Variables
         run: |
           set -x
           echo "Checking if environment variables are loaded..."
-          if [ -z "$SUMUP_API_KEY" ]; then
-            echo "API key is missing or not set correctly."
-            exit 1
-          else
-            echo "API key is loaded successfully."
-            echo "API key length: ${#SUMUP_API_KEY}"
-          fi
-          
           if [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
             echo "Google Application Credentials JSON is missing or not set correctly."
             exit 1
@@ -48,7 +39,6 @@ jobs:
             echo "Credentials length: ${#GOOGLE_APPLICATION_CREDENTIALS}"
           fi
         env:
-          SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Print Directory Structure Before Script Execution
@@ -64,8 +54,6 @@ jobs:
       - name: Run the script
         run: |
           set -x
-          # Change to the directory containing the script if necessary
-          cd path/to/your/scripts
           if [ -f TotalSales2BigQuery.py ]; then
             echo "File TotalSales2BigQuery.py found. Running script."
             python TotalSales2BigQuery.py
@@ -74,7 +62,6 @@ jobs:
             exit 1
           fi
         env:
-          SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Print Directory Structure After Script Execution
@@ -86,5 +73,5 @@ jobs:
           echo "Contents of 'data' directory after script execution:"
           ls -la data || echo "'data' directory does not exist."
           echo "Checking if CSV file exists at full path:"
-          ls -la data/TotalSales_$(date +%Y%m%d).csv || echo "CSV file not found."
+          ls -la data/dummy_data.csv || echo "CSV file not found."
         continue-on-error: true
