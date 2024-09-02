@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
+print("Script started.")
+
 # Access API key from environment variable
 api_key = os.getenv('SUMUP_API_KEY')
 
