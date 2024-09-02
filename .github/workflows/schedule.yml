@@ -30,6 +30,7 @@ jobs:
           set -x
           python -m pip install --upgrade pip
           pip install -r requirements.txt || { echo 'Dependency installation failed'; exit 1; }
+          pip install google-cloud-bigquery google-auth google-auth-oauthlib google-auth-httplib2 || { echo 'Google Cloud dependencies installation failed'; exit 1; }
 
       - name: Verify API Key
         run: |
@@ -48,9 +49,10 @@ jobs:
       - name: Run the script
         env:
           SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
+          GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
         run: |
           set -x
-          python TotalSales.py || { echo 'Script execution failed'; exit 2; }
+          python TotalSales2BigQuery.py || { echo 'Script execution failed'; exit 2; }
 
       - name: Print Directory Structure After Script Execution
         run: |
@@ -76,9 +78,9 @@ jobs:
       - name: Print CSV Headers
         run: |
           echo "Printing headers of the CSV file:"
-          head -n 1 data/TotalSales_20240901.csv || { echo 'Failed to read CSV headers'; exit 3; }
+          head -n 1 data/TotalSales_$(date +%Y%m%d).csv || { echo 'Failed to read CSV headers'; exit 3; }
 
       - name: Print First 10 Rows of CSV
         run: |
           echo "Printing the first 10 rows of the CSV file:"
-          head -n 10 data/TotalSales_20240901.csv || { echo 'Failed to read CSV content'; exit 4; }
+          head -n 10 data/TotalSales_$(date +%Y%m%d).csv || { echo 'Failed to read CSV content'; exit 4; }
