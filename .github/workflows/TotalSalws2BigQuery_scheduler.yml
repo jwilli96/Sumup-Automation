@@ -58,7 +58,7 @@ jobs:
           echo "Directory contents before script execution:"
           ls -la
           echo "Contents of 'data' directory:"
-          ls -la data
+          ls -la data || echo "'data' directory does not exist."
         continue-on-error: true
 
       - name: Run the script
@@ -82,5 +82,7 @@ jobs:
           echo "Directory contents after script execution:"
           ls -la
           echo "Contents of 'data' directory after script execution:"
-          ls -la data
+          ls -la data || echo "'data' directory does not exist."
+          echo "Checking if CSV file exists at full path:"
+          ls -la data/TotalSales_$(date +%Y%m%d).csv || echo "CSV file not found."
         continue-on-error: true
