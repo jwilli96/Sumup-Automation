@@ -8,7 +8,7 @@ import json
 print("Script started.")
 
 # Read credentials from environment variable
-credentials_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
+credentials_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 
 if not credentials_json:
     print("Credentials environment variable not found. Exiting script.")
