@@ -85,14 +85,4 @@ jobs:
       - name: List files in 'data' directory
         run: |
           echo "Contents of the data directory (if it exists):"
-          ls -la data || echo "'data' directory does not exist."
-
-      - name: Print CSV Headers
-        run: |
-          echo "Printing headers of the CSV file:"
-          head -n 1 data/TotalSales_$(date +%Y%m%d).csv || { echo 'Failed to read CSV headers'; exit 3; }
-
-      - name: Print First 10 Rows of CSV
-        run: |
-          echo "Printing the first 10 rows of the CSV file:"
-          head -n 10 data/TotalSales_$(date +%Y%m%d).csv || { echo 'Failed to read CSV content'; exit 4; }
+          ls -
