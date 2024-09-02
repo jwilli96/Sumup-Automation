@@ -64,11 +64,13 @@ jobs:
       - name: Run the script
         run: |
           set -x
+          # Change to the directory containing the script if necessary
+          cd path/to/your/scripts
           if [ -f TotalSales2BigQuery.py ]; then
             echo "File TotalSales2BigQuery.py found. Running script."
             python TotalSales2BigQuery.py
           else
-            echo "Error: SalesToBigQuery.py not found."
+            echo "Error: TotalSales2BigQuery.py not found."
             exit 1
           fi
         env:
