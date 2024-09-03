@@ -81,8 +81,15 @@ def save_transactions_to_csv(transactions, save_directory):
 
 # Function to upload CSV to BigQuery with retries
 def upload_csv_to_bigquery(csv_path):
-    # Automatically uses credentials from the GOOGLE_APPLICATION_CREDENTIALS environment variable
-    client = bigquery.Client(project='sumup-integration')  # Replace with your project ID
+    # Use credentials file specified in GOOGLE_APPLICATION_CREDENTIALS environment variable
+    credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    if not os.path.exists(credentials_path):
+        print_and_log(f"Credentials file {credentials_path} not found.")
+        exit(1)
+
+    # Create BigQuery client using the credentials file
+    credentials = bigquery.Credentials.from_service_account_file(credentials_path)
+    client = bigquery.Client(credentials=credentials, project='sumup-integration')
 
     dataset_id = 'TotalSales'  # Your dataset ID
     table_id = 'TotalSalesTable'  # Only the table name
@@ -118,9 +125,17 @@ def upload_csv_to_bigquery(csv_path):
 
 # Function to upload file to Google Cloud Storage
 def upload_to_gcs(bucket_name, source_file_name, destination_blob_name):
-    # Automatically uses credentials from the GOOGLE_APPLICATION_CREDENTIALS environment variable
-    client = storage.Client(project='sumup-integration')  # Replace with your project ID
-    bucket = client.bucket(bucket_name, user_project='sumup-integration')  # Use user_project if cross-project billing is needed
+    # Use credentials file specified in GOOGLE_APPLICATION_CREDENTIALS environment variable
+    credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    if not os.path.exists(credentials_path):
+        print_and_log(f"Credentials file {credentials_path} not found.")
+        exit(1)
+
+    # Create Cloud Storage client using the credentials file
+    credentials = bigquery.Credentials.from_service_account_file(credentials_path)
+    client = storage.Client(credentials=credentials, project='sumup-integration')
+
+    bucket = client.bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
 
     blob.upload_from_filename(source_file_name)
