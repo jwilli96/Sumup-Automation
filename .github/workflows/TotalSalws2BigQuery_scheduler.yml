@@ -2,7 +2,7 @@ name: Run Dummy Data Script
 
 on:
   schedule:
-    - cron: '*/15 * * * *'  # Every 15 minutes
+    - cron: '*/60000 * * * *'  # Every 60000 minutes
   workflow_dispatch:
 
 jobs:
