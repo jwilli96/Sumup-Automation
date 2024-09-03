@@ -7,6 +7,7 @@ import time
 from datetime import datetime, timezone
 from google.cloud import bigquery, storage
 from google.api_core.exceptions import GoogleAPIError
+from google.oauth2.service_account import Credentials  # Corrected import
 
 # Set up logging
 log_file = 'script_output.log'
@@ -88,7 +89,7 @@ def upload_csv_to_bigquery(csv_path):
         exit(1)
 
     # Create BigQuery client using the credentials file
-    credentials = bigquery.Credentials.from_service_account_file(credentials_path)
+    credentials = Credentials.from_service_account_file(credentials_path)  # Corrected line
     client = bigquery.Client(credentials=credentials, project='sumup-integration')
 
     dataset_id = 'TotalSales'  # Your dataset ID
@@ -132,7 +133,7 @@ def upload_to_gcs(bucket_name, source_file_name, destination_blob_name):
         exit(1)
 
     # Create Cloud Storage client using the credentials file
-    credentials = bigquery.Credentials.from_service_account_file(credentials_path)
+    credentials = Credentials.from_service_account_file(credentials_path)  # Corrected line
     client = storage.Client(credentials=credentials, project='sumup-integration')
 
     bucket = client.bucket(bucket_name)
