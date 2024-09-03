@@ -1,2 +1,5 @@
 requests
 pandas
+google-cloud-bigquery
+google-cloud-storage
+google-auth
