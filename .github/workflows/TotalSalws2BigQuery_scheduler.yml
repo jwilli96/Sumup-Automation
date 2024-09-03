@@ -23,7 +23,7 @@ jobs:
           set -x
           python -m pip install --upgrade pip
           pip install -r requirements.txt || { echo 'Dependency installation failed'; exit 1; }
-          pip install google-cloud-bigquery google-auth || { echo 'Google Cloud dependencies installation failed'; exit 1; }
+          pip install google-cloud-bigquery google-cloud-storage google-auth || { echo 'Google Cloud dependencies installation failed'; exit 1; }
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
@@ -73,12 +73,5 @@ jobs:
           echo "Contents of 'data' directory after script execution:"
           ls -la data || echo "'data' directory does not exist."
           echo "Checking if CSV file exists at full path:"
-          ls -la data/*.csv || echo "CSV file not found."
+          ls -la data/dummy_data.csv || echo "CSV file not found."
         continue-on-error: true
-
-      - name: Upload CSV file as an artifact
-        if: success() # This ensures the upload step only runs if the previous steps were successful
-        uses: actions/upload-artifact@v3
-        with:
-          name: csv-file
-          path: data/*.csv
