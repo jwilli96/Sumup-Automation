@@ -7,7 +7,7 @@ on:
 
 jobs:
   run-script:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Check out repository
@@ -23,91 +23,78 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install google-cloud-bigquery google-cloud-storage google-auth
-        shell: pwsh
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
           SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
 
       - name: Verify Environment Variables
         run: |
-          Write-Host "Checking if environment variables are loaded..."
-          if (-not $env:GOOGLE_APPLICATION_CREDENTIALS) {
-            Write-Host "Google Application Credentials JSON is missing or not set correctly."
+          echo "Checking if environment variables are loaded..."
+          if [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
+            echo "Google Application Credentials JSON is missing or not set correctly."
             exit 1
-          }
-          else {
-            Write-Host "Google Application Credentials JSON is loaded successfully."
-            Write-Host "Credentials length: $($env:GOOGLE_APPLICATION_CREDENTIALS.Length)"
-          }
-          if (-not $env:SUMUP_API_KEY) {
-            Write-Host "SumUp API key is missing or not set correctly."
+          else
+            echo "Google Application Credentials JSON is loaded successfully."
+            echo "Credentials length: ${#GOOGLE_APPLICATION_CREDENTIALS}"
+          fi
+          if [ -z "$SUMUP_API_KEY" ]; then
+            echo "SumUp API key is missing or not set correctly."
             exit 1
-          }
-          else {
-            Write-Host "SumUp API key is loaded successfully."
-            Write-Host "API key length: $($env:SUMUP_API_KEY.Length)"
-          }
-        shell: pwsh
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-          SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
+          else
+            echo "SumUp API key is loaded successfully."
+            echo "API key length: ${#SUMUP_API_KEY}"
+          fi
 
       - name: Print Directory Structure Before Script Execution
         run: |
-          Write-Host "Current working directory before script execution:"
+          echo "Current working directory before script execution:"
           pwd
-          Write-Host "Directory contents before script execution:"
-          Get-ChildItem -Recurse
-          if (Test-Path -Path data) {
-            Write-Host "Contents of 'data' directory:"
-            Get-ChildItem data
-          }
-          else {
-            Write-Host "'data' directory does not exist."
-          }
-        shell: pwsh
+          echo "Directory contents before script execution:"
+          ls -la
+          if [ -d "data" ]; then
+            echo "Contents of 'data' directory:"
+            ls -la data
+          else
+            echo "'data' directory does not exist."
+          fi
         continue-on-error: true
 
       - name: Run the script
         run: |
-          if (Test-Path -Path TotalSales2BigQuery.py) {
-            Write-Host "File TotalSales2BigQuery.py found. Running script."
+          if [ -f "TotalSales2BigQuery.py" ]; then
+            echo "File TotalSales2BigQuery.py found. Running script."
             python TotalSales2BigQuery.py
-          }
-          else {
-            Write-Host "Error: TotalSales2BigQuery.py not found."
+          else
+            echo "Error: TotalSales2BigQuery.py not found."
             exit 1
-          }
-        shell: pwsh
+          fi
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
           SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
 
       - name: Print Directory Structure After Script Execution
         run: |
-          Write-Host "Current working directory after script execution:"
+          echo "Current working directory after script execution:"
           pwd
-          Write-Host "Directory contents after script execution:"
-          Get-ChildItem -Recurse
-          if (Test-Path -Path data) {
-            Write-Host "Contents of 'data' directory after script execution:"
-            Get-ChildItem data
-          }
-          else {
-            Write-Host "'data' directory does not exist."
-          }
-          Write-Host "Checking if CSV file exists at full path:"
-          if (Test-Path -Path data\TotalSales_*.csv) {
-            Get-ChildItem data\TotalSales_*.csv
-          }
-          else {
-            Write-Host "CSV file not found."
-          }
-        shell: pwsh
+          echo "Directory contents after script execution:"
+          ls -la
+          if [ -d "data" ]; then
+            echo "Contents of 'data' directory after script execution:"
+            ls -la data
+          else
+            echo "'data' directory does not exist."
+          fi
+          echo "Checking if CSV file exists at full path:"
+          if ls data/TotalSales_*.csv 1> /dev/null 2>&1; then
+            echo "CSV file(s) found:"
+            ls data/TotalSales_*.csv
+          else
+            echo "CSV file not found."
+          fi
         continue-on-error: true
 
       - name: Upload CSV file as an artifact
         uses: actions/upload-artifact@v3
         with:
           name: csv-file
-          path: data\TotalSales_*.csv  # Upload any CSV file generated in the 'data' directory
+          path: data/TotalSales_*.csv  # Upload any CSV file generated in the 'data' directory
