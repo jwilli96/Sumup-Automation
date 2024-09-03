@@ -1,5 +1,4 @@
 import os
-import uuid
 import logging
 import requests
 import pandas as pd
@@ -87,8 +86,8 @@ def upload_csv_to_bigquery(csv_path, credentials_json):
     credentials = service_account.Credentials.from_service_account_info(credentials_info)
     client = bigquery.Client(credentials=credentials, project='sumup-integration')  # Replace with your project ID
 
-    dataset_id = 'sumup-integration.TotalSales'  # Replace with your dataset ID
-    table_id = 'sumup-integration.TotalSales.TotalSalesTable'      # Replace with your table ID
+    dataset_id = 'sumup-integration.TotalSales'  # Your dataset ID
+    table_id = 'TotalSalesTable'  # Only the table name
     table_ref = client.dataset(dataset_id).table(table_id)
 
     job_config = bigquery.LoadJobConfig(
