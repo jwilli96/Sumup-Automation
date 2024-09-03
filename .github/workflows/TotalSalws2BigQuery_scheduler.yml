@@ -82,19 +82,4 @@ jobs:
             echo "Contents of 'data' directory after script execution:"
             ls -la data
           else
-            echo "'data' directory does not exist."
-          fi
-          echo "Checking if CSV file exists at full path:"
-          if ls data/TotalSales_*.csv 1> /dev/null 2>&1; then
-            echo "CSV file(s) found:"
-            ls data/TotalSales_*.csv
-          else
-            echo "CSV file not found."
-          fi
-        continue-on-error: true
-
-      - name: Upload CSV file as an artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: csv-file
-          path: data/TotalSales_*.csv  # Upload any CSV file generated in the 'data' directory
+            echo "'data' directory does
