@@ -22,7 +22,7 @@ def fetch_transactions(api_key, start_date, end_date):
                 transactions = transactions_response['items']
                 all_transactions.extend(transactions)
             else:
-                print("The 'items' key was not found in the response.")
+                print("The 'items' key was not found in the response.", flush=True)
                 break
 
             next_link = next((link for link in transactions_response.get('links', []) if link['rel'] == 'next'), None)
@@ -32,8 +32,8 @@ def fetch_transactions(api_key, start_date, end_date):
             else:
                 break
         else:
-            print(f"Failed to retrieve transactions. Status code: {response.status_code}")
-            print("Response:", response.text)
+            print(f"Failed to retrieve transactions. Status code: {response.status_code}", flush=True)
+            print("Response:", response.text, flush=True)
             break
 
     return all_transactions
@@ -61,14 +61,14 @@ def save_transactions_to_csv(transactions, save_directory):
 
         # Ensure the CSV file exists and print its path
         if os.path.exists(full_path):
-            print(f"Transactions exported to {full_path}")
-            print(f"File size: {os.path.getsize(full_path)} bytes")
+            print(f"Transactions exported to {full_path}", flush=True)
+            print(f"File size: {os.path.getsize(full_path)} bytes", flush=True)
         else:
-            print("CSV file was not created successfully.")
+            print("CSV file was not created successfully.", flush=True)
         
         return full_path
     else:
-        print("No transactions found for the specified date range.")
+        print("No transactions found for the specified date range.", flush=True)
         return None
 
 # Function to upload CSV to BigQuery
@@ -96,7 +96,7 @@ def upload_csv_to_bigquery(csv_path, credentials_json):
         job = client.load_table_from_file(source_file, table_ref, job_config=job_config)
         job.result()  # Wait for the load job to complete
 
-    print(f"Data loaded into BigQuery table '{table_id}'.")
+    print(f"Data loaded into BigQuery table '{table_id}'.", flush=True)
 
 # Function to upload file to Google Cloud Storage
 def upload_to_gcs(bucket_name, source_file_name, destination_blob_name, credentials_json):
@@ -111,14 +111,14 @@ def upload_to_gcs(bucket_name, source_file_name, destination_blob_name, credenti
 
     # Upload the file
     blob.upload_from_filename(source_file_name)
-    print(f"File {source_file_name} uploaded to {destination_blob_name} in bucket {bucket_name}.")
+    print(f"File {source_file_name} uploaded to {destination_blob_name} in bucket {bucket_name}.", flush=True)
 
 # Main script execution
 def main():
     # API Key and Date Range
     api_key = os.getenv('SUMUP_API_KEY')
     if not api_key:
-        print("API key is missing.")
+        print("API key is missing.", flush=True)
         exit(1)
 
     start_date = datetime(2023, 12, 3, tzinfo=timezone.utc)
@@ -132,7 +132,7 @@ def main():
     if csv_path:
         credentials_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
         if not credentials_json:
-            print("Credentials environment variable not found. Exiting script.")
+            print("Credentials environment variable not found. Exiting script.", flush=True)
             exit(1)
         upload_csv_to_bigquery(csv_path, credentials_json)
 
