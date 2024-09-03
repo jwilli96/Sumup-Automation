@@ -132,7 +132,7 @@ def main():
     csv_path = save_transactions_to_csv(transactions, 'data')
 
     if csv_path:
-        credentials_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
+        credentials_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
         if not credentials_json:
             print_and_log("Credentials environment variable not found. Exiting script.")
             exit(1)
