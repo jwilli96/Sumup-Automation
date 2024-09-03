@@ -6,7 +6,6 @@ import json
 import time
 from datetime import datetime, timezone
 from google.cloud import bigquery, storage
-from google.oauth2 import service_account
 from google.api_core.exceptions import GoogleAPIError
 
 # Set up logging
@@ -81,10 +80,9 @@ def save_transactions_to_csv(transactions, save_directory):
         return None
 
 # Function to upload CSV to BigQuery with retries
-def upload_csv_to_bigquery(csv_path, credentials_json):
-    credentials_info = json.loads(credentials_json)
-    credentials = service_account.Credentials.from_service_account_info(credentials_info)
-    client = bigquery.Client(credentials=credentials, project='sumup-integration')  # Replace with your project ID
+def upload_csv_to_bigquery(csv_path):
+    # Automatically uses credentials from the GOOGLE_APPLICATION_CREDENTIALS environment variable
+    client = bigquery.Client(project='sumup-integration')  # Replace with your project ID
 
     dataset_id = 'TotalSales'  # Your dataset ID
     table_id = 'TotalSalesTable'  # Only the table name
@@ -119,12 +117,10 @@ def upload_csv_to_bigquery(csv_path, credentials_json):
                 raise
 
 # Function to upload file to Google Cloud Storage
-def upload_to_gcs(bucket_name, source_file_name, destination_blob_name, credentials_json):
-    credentials_info = json.loads(credentials_json)
-    credentials = service_account.Credentials.from_service_account_info(credentials_info)
-    
-    client = storage.Client(credentials=credentials, project='sumup-integration')  # Replace with your project ID
-    bucket = client.bucket(bucket_name)
+def upload_to_gcs(bucket_name, source_file_name, destination_blob_name):
+    # Automatically uses credentials from the GOOGLE_APPLICATION_CREDENTIALS environment variable
+    client = storage.Client(project='sumup-integration')  # Replace with your project ID
+    bucket = client.bucket(bucket_name, user_project='sumup-integration')  # Use user_project if cross-project billing is needed
     blob = bucket.blob(destination_blob_name)
 
     blob.upload_from_filename(source_file_name)
@@ -144,12 +140,9 @@ def main():
     csv_path = save_transactions_to_csv(transactions, 'data')
 
     if csv_path:
-        credentials_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-        if not credentials_json:
-            print_and_log("Credentials environment variable not found. Exiting script.")
-            exit(1)
-        upload_csv_to_bigquery(csv_path, credentials_json)
-        upload_to_gcs('your_bucket_name', csv_path, f"data/{os.path.basename(csv_path)}", credentials_json)
+        # The credentials will automatically be used if the GOOGLE_APPLICATION_CREDENTIALS environment variable is set correctly
+        upload_csv_to_bigquery(csv_path)
+        upload_to_gcs('your_bucket_name', csv_path, f"data/{os.path.basename(csv_path)}")
 
 if __name__ == "__main__":
     main()
