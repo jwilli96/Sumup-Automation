@@ -1,10 +1,20 @@
+import os
+import uuid
+import logging
 import requests
 import pandas as pd
-import os
 import json
 from datetime import datetime, timezone
 from google.cloud import bigquery, storage
 from google.oauth2 import service_account
+
+# Set up logging
+log_file = 'script_output.log'
+logging.basicConfig(filename=log_file, level=logging.DEBUG, format='%(message)s')
+
+def print_and_log(message):
+    print(message)
+    logging.debug(message)
 
 # Function to fetch transactions from SumUp API
 def fetch_transactions(api_key, start_date, end_date):
@@ -22,7 +32,7 @@ def fetch_transactions(api_key, start_date, end_date):
                 transactions = transactions_response['items']
                 all_transactions.extend(transactions)
             else:
-                print("The 'items' key was not found in the response.", flush=True)
+                print_and_log("The 'items' key was not found in the response.")
                 break
 
             next_link = next((link for link in transactions_response.get('links', []) if link['rel'] == 'next'), None)
@@ -32,8 +42,8 @@ def fetch_transactions(api_key, start_date, end_date):
             else:
                 break
         else:
-            print(f"Failed to retrieve transactions. Status code: {response.status_code}", flush=True)
-            print("Response:", response.text, flush=True)
+            print_and_log(f"Failed to retrieve transactions. Status code: {response.status_code}")
+            print_and_log("Response: " + response.text)
             break
 
     return all_transactions
@@ -41,7 +51,6 @@ def fetch_transactions(api_key, start_date, end_date):
 # Function to save transactions to a CSV file
 def save_transactions_to_csv(transactions, save_directory):
     if transactions:
-        # Ensure all date operations are correct
         start_date = datetime(2023, 12, 3, tzinfo=timezone.utc)  # Ensure dates are correct
         end_date = datetime.now(timezone.utc)
 
@@ -59,16 +68,15 @@ def save_transactions_to_csv(transactions, save_directory):
         full_path = os.path.join(save_directory, csv_filename)
         df.to_csv(full_path, index=False)
 
-        # Ensure the CSV file exists and print its path
         if os.path.exists(full_path):
-            print(f"Transactions exported to {full_path}", flush=True)
-            print(f"File size: {os.path.getsize(full_path)} bytes", flush=True)
+            print_and_log(f"Transactions exported to {full_path}")
+            print_and_log(f"File size: {os.path.getsize(full_path)} bytes")
         else:
-            print("CSV file was not created successfully.", flush=True)
+            print_and_log("CSV file was not created successfully.")
         
         return full_path
     else:
-        print("No transactions found for the specified date range.", flush=True)
+        print_and_log("No transactions found for the specified date range.")
         return None
 
 # Function to upload CSV to BigQuery
@@ -96,47 +104,39 @@ def upload_csv_to_bigquery(csv_path, credentials_json):
         job = client.load_table_from_file(source_file, table_ref, job_config=job_config)
         job.result()  # Wait for the load job to complete
 
-    print(f"Data loaded into BigQuery table '{table_id}'.", flush=True)
+    print_and_log(f"Data loaded into BigQuery table '{table_id}'.")
 
 # Function to upload file to Google Cloud Storage
 def upload_to_gcs(bucket_name, source_file_name, destination_blob_name, credentials_json):
-    # Convert credentials JSON string to a dictionary
     credentials_info = json.loads(credentials_json)
     credentials = service_account.Credentials.from_service_account_info(credentials_info)
     
-    # Initialize a Cloud Storage client
     client = storage.Client(credentials=credentials, project='your_project_id')  # Replace with your project ID
     bucket = client.bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
 
-    # Upload the file
     blob.upload_from_filename(source_file_name)
-    print(f"File {source_file_name} uploaded to {destination_blob_name} in bucket {bucket_name}.", flush=True)
+    print_and_log(f"File {source_file_name} uploaded to {destination_blob_name} in bucket {bucket_name}.")
 
 # Main script execution
 def main():
-    # API Key and Date Range
     api_key = os.getenv('SUMUP_API_KEY')
     if not api_key:
-        print("API key is missing.", flush=True)
+        print_and_log("API key is missing.")
         exit(1)
 
     start_date = datetime(2023, 12, 3, tzinfo=timezone.utc)
     end_date = datetime.now(timezone.utc)
 
-    # Fetch and save transactions
     transactions = fetch_transactions(api_key, start_date, end_date)
     csv_path = save_transactions_to_csv(transactions, 'data')
 
-    # Upload to BigQuery if CSV file was created
     if csv_path:
         credentials_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON')
         if not credentials_json:
-            print("Credentials environment variable not found. Exiting script.", flush=True)
+            print_and_log("Credentials environment variable not found. Exiting script.")
             exit(1)
         upload_csv_to_bigquery(csv_path, credentials_json)
-
-        # Upload to Google Cloud Storage
         upload_to_gcs('your_bucket_name', csv_path, f"data/{os.path.basename(csv_path)}", credentials_json)
 
 if __name__ == "__main__":
