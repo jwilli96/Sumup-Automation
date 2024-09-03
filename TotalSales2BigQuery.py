@@ -3,7 +3,7 @@ import pandas as pd
 import os
 import json
 from datetime import datetime, timezone
-from google.cloud import bigquery
+from google.cloud import bigquery, storage
 from google.oauth2 import service_account
 
 # Function to fetch transactions from SumUp API
@@ -41,6 +41,10 @@ def fetch_transactions(api_key, start_date, end_date):
 # Function to save transactions to a CSV file
 def save_transactions_to_csv(transactions, save_directory):
     if transactions:
+        # Ensure all date operations are correct
+        start_date = datetime(2023, 12, 3, tzinfo=timezone.utc)  # Ensure dates are correct
+        end_date = datetime.now(timezone.utc)
+
         df = pd.DataFrame(transactions)
         df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_convert('UTC')
         df = df[df['status'] == 'SUCCESSFUL']
@@ -54,8 +58,14 @@ def save_transactions_to_csv(transactions, save_directory):
         csv_filename = f"TotalSales_{datetime.now().strftime('%Y%m%d')}.csv"
         full_path = os.path.join(save_directory, csv_filename)
         df.to_csv(full_path, index=False)
-        print(f"Transactions exported to {full_path}")
-        print(f"File size: {os.path.getsize(full_path)} bytes")
+
+        # Ensure the CSV file exists and print its path
+        if os.path.exists(full_path):
+            print(f"Transactions exported to {full_path}")
+            print(f"File size: {os.path.getsize(full_path)} bytes")
+        else:
+            print("CSV file was not created successfully.")
+        
         return full_path
     else:
         print("No transactions found for the specified date range.")
@@ -88,6 +98,21 @@ def upload_csv_to_bigquery(csv_path, credentials_json):
 
     print(f"Data loaded into BigQuery table '{table_id}'.")
 
+# Function to upload file to Google Cloud Storage
+def upload_to_gcs(bucket_name, source_file_name, destination_blob_name, credentials_json):
+    # Convert credentials JSON string to a dictionary
+    credentials_info = json.loads(credentials_json)
+    credentials = service_account.Credentials.from_service_account_info(credentials_info)
+    
+    # Initialize a Cloud Storage client
+    client = storage.Client(credentials=credentials, project='your_project_id')  # Replace with your project ID
+    bucket = client.bucket(bucket_name)
+    blob = bucket.blob(destination_blob_name)
+
+    # Upload the file
+    blob.upload_from_filename(source_file_name)
+    print(f"File {source_file_name} uploaded to {destination_blob_name} in bucket {bucket_name}.")
+
 # Main script execution
 def main():
     # API Key and Date Range
@@ -110,6 +135,9 @@ def main():
             print("Credentials environment variable not found. Exiting script.")
             exit(1)
         upload_csv_to_bigquery(csv_path, credentials_json)
+
+        # Upload to Google Cloud Storage
+        upload_to_gcs('your_bucket_name', csv_path, f"data/{os.path.basename(csv_path)}", credentials_json)
 
 if __name__ == "__main__":
     main()
