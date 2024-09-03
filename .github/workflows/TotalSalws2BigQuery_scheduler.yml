@@ -23,9 +23,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install google-cloud-bigquery google-cloud-storage google-auth
-        env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-          SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
 
       - name: Verify Environment Variables
         run: |
@@ -36,6 +33,7 @@ jobs:
           else
             echo "Google Application Credentials JSON is loaded successfully."
             echo "Credentials length: ${#GOOGLE_APPLICATION_CREDENTIALS}"
+            echo "Credentials (partial): ${GOOGLE_APPLICATION_CREDENTIALS:0:100}"
           fi
           if [ -z "$SUMUP_API_KEY" ]; then
             echo "SumUp API key is missing or not set correctly."
@@ -44,6 +42,9 @@ jobs:
             echo "SumUp API key is loaded successfully."
             echo "API key length: ${#SUMUP_API_KEY}"
           fi
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
 
       - name: Print Directory Structure Before Script Execution
         run: |
@@ -82,4 +83,19 @@ jobs:
             echo "Contents of 'data' directory after script execution:"
             ls -la data
           else
-            echo "'data' directory does
+            echo "'data' directory does not exist."
+          fi
+          echo "Checking if CSV file exists at full path:"
+          if ls data/TotalSales_*.csv 1> /dev/null 2>&1; then
+            echo "CSV file(s) found:"
+            ls data/TotalSales_*.csv
+          else
+            echo "CSV file not found."
+          fi
+        continue-on-error: true
+
+      - name: Upload CSV file as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: csv-file
+          path: data/TotalSales_*.csv  # Upload any CSV file generated in the 'data' directory
