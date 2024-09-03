@@ -26,6 +26,7 @@ jobs:
           pip install google-cloud-bigquery google-cloud-storage google-auth || { echo 'Google Cloud dependencies installation failed'; exit 1; }
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
 
       - name: Verify Environment Variables
         run: |
@@ -38,8 +39,16 @@ jobs:
             echo "Google Application Credentials JSON is loaded successfully."
             echo "Credentials length: ${#GOOGLE_APPLICATION_CREDENTIALS}"
           fi
+          if [ -z "$SUMUP_API_KEY" ]; then
+            echo "SumUp API key is missing or not set correctly."
+            exit 1
+          else
+            echo "SumUp API key is loaded successfully."
+            echo "API key length: ${#SUMUP_API_KEY}"
+          fi
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
 
       - name: Print Directory Structure Before Script Execution
         run: |
@@ -63,6 +72,7 @@ jobs:
           fi
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
 
       - name: Print Directory Structure After Script Execution
         run: |
