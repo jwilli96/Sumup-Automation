@@ -75,7 +75,7 @@ def save_transactions_to_csv(transactions, save_directory):
 def upload_csv_to_bigquery(csv_path, credentials_json):
     credentials_info = json.loads(credentials_json)
     credentials = service_account.Credentials.from_service_account_info(credentials_info)
-    client = bigquery.Client(credentials=credentials, project='sumup-integration')
+    client = bigquery.Client(credentials=credentials, project='your_project_id')  # Replace with your project ID
 
     dataset_id = 'your_dataset_id'  # Replace with your dataset ID
     table_id = 'your_table_id'      # Replace with your table ID
