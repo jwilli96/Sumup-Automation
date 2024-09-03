@@ -24,7 +24,7 @@ jobs:
           pip install -r requirements.txt
           pip install google-cloud-bigquery google-cloud-storage google-auth
 
-      - name: Verify Environment Variables
+      - name: Verify Environment Variables and Set Credentials
         run: |
           echo "Checking if environment variables are loaded..."
           if [ -z "$GOOGLE_APPLICATION_CREDENTIALS" ]; then
@@ -32,6 +32,8 @@ jobs:
             exit 1
           else
             echo "Google Application Credentials JSON is loaded successfully."
+            echo "$GOOGLE_APPLICATION_CREDENTIALS" > credentials.json
+            echo "Credentials saved to credentials.json"
             echo "Credentials length: ${#GOOGLE_APPLICATION_CREDENTIALS}"
             echo "Credentials (partial): ${GOOGLE_APPLICATION_CREDENTIALS:0:100}"
           fi
@@ -46,31 +48,17 @@ jobs:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
           SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
 
-      - name: Print Directory Structure Before Script Execution
-        run: |
-          echo "Current working directory before script execution:"
-          pwd
-          echo "Directory contents before script execution:"
-          ls -la
-          if [ -d "data" ]; then
-            echo "Contents of 'data' directory:"
-            ls -la data
-          else
-            echo "'data' directory does not exist."
-          fi
-        continue-on-error: true
-
       - name: Run the script
         run: |
           if [ -f "TotalSales2BigQuery.py" ]; then
             echo "File TotalSales2BigQuery.py found. Running script."
+            export GOOGLE_APPLICATION_CREDENTIALS=credentials.json
             python TotalSales2BigQuery.py
           else
             echo "Error: TotalSales2BigQuery.py not found."
             exit 1
           fi
         env:
-          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
           SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
 
       - name: Print Directory Structure After Script Execution
