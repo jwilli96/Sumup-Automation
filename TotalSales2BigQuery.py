@@ -4,9 +4,11 @@ import logging
 import requests
 import pandas as pd
 import json
+import time
 from datetime import datetime, timezone
 from google.cloud import bigquery, storage
 from google.oauth2 import service_account
+from google.api_core.exceptions import GoogleAPIError
 
 # Set up logging
 log_file = 'script_output.log'
@@ -79,7 +81,7 @@ def save_transactions_to_csv(transactions, save_directory):
         print_and_log("No transactions found for the specified date range.")
         return None
 
-# Function to upload CSV to BigQuery
+# Function to upload CSV to BigQuery with retries
 def upload_csv_to_bigquery(csv_path, credentials_json):
     credentials_info = json.loads(credentials_json)
     credentials = service_account.Credentials.from_service_account_info(credentials_info)
@@ -100,11 +102,22 @@ def upload_csv_to_bigquery(csv_path, credentials_json):
         source_format=bigquery.SourceFormat.CSV,
     )
 
-    with open(csv_path, "rb") as source_file:
-        job = client.load_table_from_file(source_file, table_ref, job_config=job_config)
-        job.result()  # Wait for the load job to complete
-
-    print_and_log(f"Data loaded into BigQuery table '{table_id}'.")
+    retries = 3
+    for attempt in range(retries):
+        try:
+            with open(csv_path, "rb") as source_file:
+                job = client.load_table_from_file(source_file, table_ref, job_config=job_config)
+            job.result()  # Wait for the load job to complete
+            print_and_log(f"Data loaded into BigQuery table '{table_id}'.")
+            break
+        except GoogleAPIError as e:
+            print_and_log(f"Attempt {attempt + 1} failed: {e}")
+            if attempt < retries - 1:
+                print_and_log("Retrying...")
+                time.sleep(5)  # Wait before retrying
+            else:
+                print_and_log("All retry attempts failed. Exiting script.")
+                raise
 
 # Function to upload file to Google Cloud Storage
 def upload_to_gcs(bucket_name, source_file_name, destination_blob_name, credentials_json):
