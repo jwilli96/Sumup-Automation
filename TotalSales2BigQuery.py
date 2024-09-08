@@ -30,13 +30,15 @@ def fetch_transactions(api_key, start_date, end_date):
             if 'items' in transactions_response:
                 transactions = transactions_response['items']
                 all_transactions.extend(transactions)
+                print_and_log(f"Fetched {len(transactions)} transactions.")
+
             else:
                 print_and_log("The 'items' key was not found in the response.")
                 break
 
             next_link = next((link for link in transactions_response.get('links', []) if link['rel'] == 'next'), None)
             if next_link:
-                endpoint = f"{BASE_URL}/me/transactions/history?{next_link['href']}"
+                endpoint = next_link['href']  # Use the full URL for the next link
                 params = {}
             else:
                 break
@@ -45,6 +47,7 @@ def fetch_transactions(api_key, start_date, end_date):
             print_and_log("Response: " + response.text)
             break
 
+    print_and_log(f"Total transactions fetched: {len(all_transactions)}")
     return all_transactions
 
 # Function to save transactions to a CSV file
@@ -57,6 +60,7 @@ def save_transactions_to_csv(transactions, save_directory):
         df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_convert('UTC')
         df = df[df['status'] == 'SUCCESSFUL']
         df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
+        df.drop_duplicates(inplace=True)  # Remove duplicate transactions
         df['date'] = df['timestamp'].dt.strftime('%Y-%m-%d')
         df['time'] = df['timestamp'].dt.strftime('%H:%M:%S')
         df['day_of_week'] = df['timestamp'].dt.strftime('%A')
