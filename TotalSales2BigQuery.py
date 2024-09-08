@@ -125,41 +125,32 @@ def upload_csv_to_bigquery(csv_path):
         job.result()
 
         # Log job details
-        log_bigquery_job_details(client, job)
+        log_bigquery_job_details(job)
         
     except GoogleAPIError as e:
         print_and_log(f"Failed to upload data to BigQuery: {e}")
         raise
 
-def log_bigquery_job_details(client, job):
-    # Get table ID from the destination
-    table_id = job.destination.table_id if job.destination else 'Unknown Table'
-    
+def log_bigquery_job_details(job):
+    # Convert job to API representation
+    job_details = job.to_api_repr()
+
     # Log job details
-    print_and_log(f"Data loaded into BigQuery table '{table_id}'.")
-    print_and_log(f"Load job status: {job.state}")
+    print_and_log(f"Data loaded into BigQuery table '{job_details.get('destinationTable', {}).get('tableId', 'Unknown Table')}'.")
+    print_and_log(f"Load job status: {job_details.get('status', {}).get('state', 'UNKNOWN')}")
 
-    if job.error_result:
-        print_and_log(f"Job failed with errors: {job.error_result}")
+    if 'errorResult' in job_details:
+        print_and_log(f"Job failed with errors: {job_details['errorResult']}")
     
-    # Fetch detailed job statistics using the BigQuery client
-    try:
-        job_details = client.get_job(job.job_id)
-        print_and_log(f"Job ID: {job.job_id}")
-        print_and_log(f"Job type: {job_details.job_type}")
-        print_and_log(f"Created: {job_details.created}")
-        print_and_log(f"Started: {job_details.started}")
-        print_and_log(f"Ended: {job_details.ended}")
-
-        # Access job statistics directly
-        if job_details.statistics:
-            print_and_log(f"Total rows: {job_details.statistics.total_rows}")
-            print_and_log(f"Total bytes processed: {job_details.statistics.total_bytes_processed}")
-            print_and_log(f"Total bytes billed: {job_details.statistics.total_bytes_billed}")
-        if job_details.configuration.load.source_uris:
-            print_and_log(f"Source URI: {job_details.configuration.load.source_uris}")
-    except GoogleAPIError as e:
-        print_and_log(f"Failed to fetch job details: {e}")
+    if 'statistics' in job_details:
+        statistics = job_details['statistics']
+        print_and_log(f"Total rows: {statistics.get('totalRows', 'UNKNOWN')}")
+        print_and_log(f"Total bytes processed: {statistics.get('totalBytesProcessed', 'UNKNOWN')}")
+        print_and_log(f"Total bytes billed: {statistics.get('totalBytesBilled', 'UNKNOWN')}")
+    
+    if 'configuration' in job_details and 'load' in job_details['configuration']:
+        load_config = job_details['configuration']['load']
+        print_and_log(f"Source URIs: {load_config.get('sourceUris', 'UNKNOWN')}")
 
 # Main script execution
 def main():
