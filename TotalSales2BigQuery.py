@@ -27,8 +27,6 @@ def fetch_transactions(api_key, start_date, end_date):
 
     while True:
         response = requests.get(endpoint, headers=headers, params=params)
-        print_and_log(f"API Response: {response.text}")  # Log the raw response for analysis
-
         if response.status_code == 200:
             transactions_response = response.json()
             if 'items' in transactions_response:
@@ -54,9 +52,8 @@ def fetch_transactions(api_key, start_date, end_date):
 # Function to save transactions to a CSV file
 def save_transactions_to_csv(transactions, save_directory):
     if transactions:
-        start_date = datetime(2023, 12, 3, tzinfo=timezone.utc)
+        start_date = datetime(2023, 12, 3, tzinfo=timezone.utc)  # Ensure dates are correct
         end_date = datetime.now(timezone.utc)
-        print_and_log(f"Current UTC time: {datetime.utcnow()}")  # Log the current UTC time
 
         df = pd.DataFrame(transactions)
         df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_convert('UTC')
@@ -64,8 +61,7 @@ def save_transactions_to_csv(transactions, save_directory):
         df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
 
         # Remove duplicates based on unique transaction identifier
-        if 'transaction_id' in df.columns:  # Assuming a unique transaction ID is available
-            df.drop_duplicates(subset='transaction_id', keep='first', inplace=True)
+        df = df.drop_duplicates(subset='id', keep='first')  # Assuming 'id' is the unique identifier for transactions
 
         df['date'] = df['timestamp'].dt.strftime('%Y-%m-%d')
         df['time'] = df['timestamp'].dt.strftime('%H:%M:%S')
