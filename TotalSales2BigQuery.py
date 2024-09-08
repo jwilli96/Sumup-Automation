@@ -124,8 +124,11 @@ def upload_csv_to_bigquery(csv_path):
     log_bigquery_job_details(job)
 
 def log_bigquery_job_details(job):
+    # Get table ID from the destination
+    table_id = job.destination.table_id if job.destination else 'Unknown Table'
+    
     # Log job details
-    print_and_log(f"Data loaded into BigQuery table '{job.table_id}'.")
+    print_and_log(f"Data loaded into BigQuery table '{table_id}'.")
     print_and_log(f"Load job status: {job.state}")
 
     if job.error_result:
