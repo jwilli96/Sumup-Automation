@@ -7,7 +7,7 @@ import time
 from datetime import datetime, timezone
 from google.cloud import bigquery
 from google.api_core.exceptions import GoogleAPIError
-from google.oauth2.service_account import Credentials  # Corrected import
+from google.oauth2.service_account import Credentials
 
 # Set up logging
 log_file = 'script_output.log'
@@ -27,6 +27,8 @@ def fetch_transactions(api_key, start_date, end_date):
 
     while True:
         response = requests.get(endpoint, headers=headers, params=params)
+        print_and_log(f"API Response: {response.text}")  # Log the raw response for analysis
+
         if response.status_code == 200:
             transactions_response = response.json()
             if 'items' in transactions_response:
@@ -52,13 +54,19 @@ def fetch_transactions(api_key, start_date, end_date):
 # Function to save transactions to a CSV file
 def save_transactions_to_csv(transactions, save_directory):
     if transactions:
-        start_date = datetime(2023, 12, 3, tzinfo=timezone.utc)  # Ensure dates are correct
+        start_date = datetime(2023, 12, 3, tzinfo=timezone.utc)
         end_date = datetime.now(timezone.utc)
+        print_and_log(f"Current UTC time: {datetime.utcnow()}")  # Log the current UTC time
 
         df = pd.DataFrame(transactions)
         df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_convert('UTC')
         df = df[df['status'] == 'SUCCESSFUL']
         df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
+
+        # Remove duplicates based on unique transaction identifier
+        if 'transaction_id' in df.columns:  # Assuming a unique transaction ID is available
+            df.drop_duplicates(subset='transaction_id', keep='first', inplace=True)
+
         df['date'] = df['timestamp'].dt.strftime('%Y-%m-%d')
         df['time'] = df['timestamp'].dt.strftime('%H:%M:%S')
         df['day_of_week'] = df['timestamp'].dt.strftime('%A')
@@ -89,7 +97,7 @@ def upload_csv_to_bigquery(csv_path):
         exit(1)
 
     # Create BigQuery client using the credentials file
-    credentials = Credentials.from_service_account_file(credentials_path)  # Corrected line
+    credentials = Credentials.from_service_account_file(credentials_path)
     client = bigquery.Client(credentials=credentials, project='sumup-integration')
 
     dataset_id = 'TotalSales'  # Your dataset ID
@@ -123,24 +131,6 @@ def upload_csv_to_bigquery(csv_path):
             else:
                 print_and_log("All retry attempts failed. Exiting script.")
                 raise
-
-# Commenting out GCS upload function as it is not needed
-# def upload_to_gcs(bucket_name, source_file_name, destination_blob_name):
-#     # Use credentials file specified in GOOGLE_APPLICATION_CREDENTIALS environment variable
-#     credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-#     if not os.path.exists(credentials_path):
-#         print_and_log(f"Credentials file {credentials_path} not found.")
-#         exit(1)
-
-#     # Create Cloud Storage client using the credentials file
-#     credentials = Credentials.from_service_account_file(credentials_path)  # Corrected line
-#     client = storage.Client(credentials=credentials, project='sumup-integration')
-
-#     bucket = client.bucket(bucket_name)
-#     blob = bucket.blob(destination_blob_name)
-
-#     blob.upload_from_filename(source_file_name)
-#     print_and_log(f"File {source_file_name} uploaded to {destination_blob_name} in bucket {bucket_name}.")
 
 # Main script execution
 def main():
