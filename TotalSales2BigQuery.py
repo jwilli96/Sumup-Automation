@@ -7,7 +7,7 @@ import time
 from datetime import datetime, timezone
 from google.cloud import bigquery
 from google.api_core.exceptions import GoogleAPIError
-from google.oauth2.service_account import Credentials  # Corrected import
+from google.oauth2.service_account import Credentials
 
 # Set up logging
 log_file = 'script_output.log'
@@ -59,6 +59,10 @@ def save_transactions_to_csv(transactions, save_directory):
         df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_convert('UTC')
         df = df[df['status'] == 'SUCCESSFUL']
         df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
+
+        # Remove duplicates based on unique transaction identifier
+        df = df.drop_duplicates(subset='id', keep='first')  # Assuming 'id' is the unique identifier for transactions
+
         df['date'] = df['timestamp'].dt.strftime('%Y-%m-%d')
         df['time'] = df['timestamp'].dt.strftime('%H:%M:%S')
         df['day_of_week'] = df['timestamp'].dt.strftime('%A')
@@ -89,7 +93,7 @@ def upload_csv_to_bigquery(csv_path):
         exit(1)
 
     # Create BigQuery client using the credentials file
-    credentials = Credentials.from_service_account_file(credentials_path)  # Corrected line
+    credentials = Credentials.from_service_account_file(credentials_path)
     client = bigquery.Client(credentials=credentials, project='sumup-integration')
 
     dataset_id = 'TotalSales'  # Your dataset ID
