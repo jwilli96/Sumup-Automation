@@ -7,7 +7,7 @@ import time
 from datetime import datetime, timezone
 from google.cloud import bigquery
 from google.api_core.exceptions import GoogleAPIError
-from google.oauth2.service_account import Credentials
+from google.oauth2.service_account import Credentials  # Corrected import
 
 # Set up logging
 log_file = 'script_output.log'
@@ -17,15 +17,11 @@ def print_and_log(message):
     print(message)
     logging.debug(message)
 
-def log_recent_transactions(transactions, stage):
-    """ Logs the most recent 20 transactions to help diagnose issues. """
-    print_and_log(f"--- {stage} ---")
-    if transactions:
-        last_20_transactions = transactions[-20:]
-        for txn in last_20_transactions:
-            print_and_log(json.dumps(txn, indent=2))
-    else:
-        print_and_log("No transactions available.")
+# Function to print the most recent 10 transactions
+def print_recent_10_transactions(transactions, stage):
+    print_and_log(f"\nMost recent 10 transactions at stage '{stage}':")
+    for transaction in transactions[-10:]:
+        print_and_log(json.dumps(transaction, indent=2))
 
 # Function to fetch transactions from SumUp API
 def fetch_transactions(api_key, start_date, end_date):
@@ -42,6 +38,7 @@ def fetch_transactions(api_key, start_date, end_date):
             if 'items' in transactions_response:
                 transactions = transactions_response['items']
                 all_transactions.extend(transactions)
+                print_recent_10_transactions(all_transactions, 'after fetching')  # Print after fetching transactions
             else:
                 print_and_log("The 'items' key was not found in the response.")
                 break
@@ -57,36 +54,24 @@ def fetch_transactions(api_key, start_date, end_date):
             print_and_log("Response: " + response.text)
             break
 
-    log_recent_transactions(all_transactions, "After Fetching Transactions")
     return all_transactions
 
 # Function to save transactions to a CSV file
 def save_transactions_to_csv(transactions, save_directory):
     if transactions:
-        start_date = datetime(2023, 12, 3, tzinfo=timezone.utc)
+        start_date = datetime(2023, 12, 3, tzinfo=timezone.utc)  # Ensure dates are correct
         end_date = datetime.now(timezone.utc)
 
         df = pd.DataFrame(transactions)
         df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_convert('UTC')
         df = df[df['status'] == 'SUCCESSFUL']
+        print_recent_10_transactions(df.to_dict('records'), 'after filtering by status')  # Print after filtering by status
         df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
-
-        log_recent_transactions(df.to_dict(orient='records'), "After Filtering by Status and Date")
-
-        # Check for duplicates by a combination of columns
-        df_before_dedup = df.copy()
-        df = df.drop_duplicates(subset=['id', 'timestamp', 'amount'], keep='first')
-
-        # Log information about duplicates removed
-        num_duplicates = len(df_before_dedup) - len(df)
-        print_and_log(f"Number of duplicates removed: {num_duplicates}")
-
+        print_recent_10_transactions(df.to_dict('records'), 'after filtering by date range')  # Print after filtering by date range
         df['date'] = df['timestamp'].dt.strftime('%Y-%m-%d')
         df['time'] = df['timestamp'].dt.strftime('%H:%M:%S')
         df['day_of_week'] = df['timestamp'].dt.strftime('%A')
         df = df[['date', 'time', 'day_of_week', 'amount']]
-
-        log_recent_transactions(df.to_dict(orient='records'), "After Deduplication and Formatting")
 
         os.makedirs(save_directory, exist_ok=True)
         csv_filename = f"TotalSales_{datetime.now().strftime('%Y%m%d')}.csv"
@@ -106,16 +91,18 @@ def save_transactions_to_csv(transactions, save_directory):
 
 # Function to upload CSV to BigQuery with retries
 def upload_csv_to_bigquery(csv_path):
+    # Use credentials file specified in GOOGLE_APPLICATION_CREDENTIALS environment variable
     credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
     if not os.path.exists(credentials_path):
         print_and_log(f"Credentials file {credentials_path} not found.")
         exit(1)
 
-    credentials = Credentials.from_service_account_file(credentials_path)
+    # Create BigQuery client using the credentials file
+    credentials = Credentials.from_service_account_file(credentials_path)  # Corrected line
     client = bigquery.Client(credentials=credentials, project='sumup-integration')
 
-    dataset_id = 'TotalSales'
-    table_id = 'TotalSalesTable'
+    dataset_id = 'TotalSales'  # Your dataset ID
+    table_id = 'TotalSalesTable'  # Only the table name
     table_ref = client.dataset(dataset_id).table(table_id)
 
     job_config = bigquery.LoadJobConfig(
@@ -141,7 +128,7 @@ def upload_csv_to_bigquery(csv_path):
             print_and_log(f"Attempt {attempt + 1} failed: {e}")
             if attempt < retries - 1:
                 print_and_log("Retrying...")
-                time.sleep(5)
+                time.sleep(5)  # Wait before retrying
             else:
                 print_and_log("All retry attempts failed. Exiting script.")
                 raise
@@ -161,6 +148,8 @@ def main():
 
     if csv_path:
         upload_csv_to_bigquery(csv_path)
+        # Commented out GCS upload function call
+        # upload_to_gcs('your_bucket_name', csv_path, f"data/{os.path.basename(csv_path)}")
 
 if __name__ == "__main__":
     main()
