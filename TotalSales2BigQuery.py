@@ -117,13 +117,21 @@ def upload_csv_to_bigquery(csv_path):
         source_format=bigquery.SourceFormat.CSV,
     )
 
-    with open(csv_path, "rb") as source_file:
-        job = client.load_table_from_file(source_file, table_ref, job_config=job_config)
-    job.result()  # Wait for the load job to complete
+    try:
+        with open(csv_path, "rb") as source_file:
+            job = client.load_table_from_file(source_file, table_ref, job_config=job_config)
+        
+        # Wait for the load job to complete
+        job.result()
 
-    log_bigquery_job_details(job)
+        # Log job details
+        log_bigquery_job_details(client, job)
+        
+    except GoogleAPIError as e:
+        print_and_log(f"Failed to upload data to BigQuery: {e}")
+        raise
 
-def log_bigquery_job_details(job):
+def log_bigquery_job_details(client, job):
     # Get table ID from the destination
     table_id = job.destination.table_id if job.destination else 'Unknown Table'
     
@@ -133,6 +141,22 @@ def log_bigquery_job_details(job):
 
     if job.error_result:
         print_and_log(f"Job failed with errors: {job.error_result}")
+    
+    # Log detailed job statistics
+    job_details = client.get_job(job.job_id)
+    print_and_log(f"Job ID: {job.job_id}")
+    print_and_log(f"Job type: {job_details.job_type}")
+    print_and_log(f"Created: {job_details.created}")
+    print_and_log(f"Started: {job_details.started}")
+    print_and_log(f"Ended: {job_details.ended}")
+    print_and_log(f"Total rows: {job_details.statistics.total_rows}")
+    print_and_log(f"Total bytes processed: {job_details.statistics.total_bytes_processed}")
+    print_and_log(f"Total bytes billed: {job_details.statistics.total_bytes_billed}")
+    print_and_log(f"Source URI: {job_details.configuration.load.source_uris}")
+
+    # Log errors if any
+    if job_details.error_result:
+        print_and_log(f"Errors: {job_details.errors}")
 
 # Main script execution
 def main():
