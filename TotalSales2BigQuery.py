@@ -153,6 +153,8 @@ def main():
         upload_csv_to_bigquery(csv_path)
         # Commented out GCS upload function call
         # upload_to_gcs('your_bucket_name', csv_path, f"data/{os.path.basename(csv_path)}")
+        # Print the last 10 rows from the CSV file
+        print_last_10_csv_rows(csv_path)
 
 if __name__ == "__main__":
     main()
