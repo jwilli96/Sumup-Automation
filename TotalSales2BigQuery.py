@@ -135,6 +135,9 @@ def log_bigquery_job_details(job):
     # Convert job to API representation
     job_details = job.to_api_repr()
 
+    # Log raw job details for debugging
+    print_and_log(f"Raw job details: {job_details}")
+
     # Log job details
     print_and_log(f"Data loaded into BigQuery table '{job_details.get('destinationTable', {}).get('tableId', 'Unknown Table')}'.")
     print_and_log(f"Load job status: {job_details.get('status', {}).get('state', 'UNKNOWN')}")
