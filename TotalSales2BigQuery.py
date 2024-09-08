@@ -142,21 +142,22 @@ def log_bigquery_job_details(client, job):
     if job.error_result:
         print_and_log(f"Job failed with errors: {job.error_result}")
     
-    # Log detailed job statistics
-    job_details = client.get_job(job.job_id)
-    print_and_log(f"Job ID: {job.job_id}")
-    print_and_log(f"Job type: {job_details.job_type}")
-    print_and_log(f"Created: {job_details.created}")
-    print_and_log(f"Started: {job_details.started}")
-    print_and_log(f"Ended: {job_details.ended}")
-    print_and_log(f"Total rows: {job_details.statistics.total_rows}")
-    print_and_log(f"Total bytes processed: {job_details.statistics.total_bytes_processed}")
-    print_and_log(f"Total bytes billed: {job_details.statistics.total_bytes_billed}")
-    print_and_log(f"Source URI: {job_details.configuration.load.source_uris}")
-
-    # Log errors if any
-    if job_details.error_result:
-        print_and_log(f"Errors: {job_details.errors}")
+    # Fetch detailed job statistics using the BigQuery client
+    try:
+        job_details = client.get_job(job.job_id)
+        print_and_log(f"Job ID: {job.job_id}")
+        print_and_log(f"Job type: {job_details.job_type}")
+        print_and_log(f"Created: {job_details.created}")
+        print_and_log(f"Started: {job_details.started}")
+        print_and_log(f"Ended: {job_details.ended}")
+        if job_details.statistics:
+            print_and_log(f"Total rows: {job_details.statistics.total_rows}")
+            print_and_log(f"Total bytes processed: {job_details.statistics.total_bytes_processed}")
+            print_and_log(f"Total bytes billed: {job_details.statistics.total_bytes_billed}")
+        if job_details.configuration.load.source_uris:
+            print_and_log(f"Source URI: {job_details.configuration.load.source_uris}")
+    except GoogleAPIError as e:
+        print_and_log(f"Failed to fetch job details: {e}")
 
 # Main script execution
 def main():
