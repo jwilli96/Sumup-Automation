@@ -80,6 +80,18 @@ def save_transactions_to_csv(transactions, save_directory):
         print_and_log("No transactions found for the specified date range.")
         return None
 
+def print_last_10_csv_rows(csv_path):
+    if os.path.exists(csv_path):
+        df = pd.read_csv(csv_path)
+        # Ensure only the relevant columns are present
+        if all(col in df.columns for col in ['date', 'time', 'day_of_week', 'amount']):
+            print_and_log(f"\nMost recent 10 rows in the CSV file {csv_path}:")
+            print_and_log(df[['date', 'time', 'day_of_week', 'amount']].tail(10).to_string(index=False))
+        else:
+            print_and_log("The CSV file does not contain the required columns.")
+    else:
+        print_and_log(f"CSV file {csv_path} does not exist.")
+
 # Function to upload CSV to BigQuery with retries
 def upload_csv_to_bigquery(csv_path):
     # Use credentials file specified in GOOGLE_APPLICATION_CREDENTIALS environment variable
