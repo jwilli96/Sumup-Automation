@@ -120,17 +120,18 @@ def upload_csv_to_bigquery(csv_path):
         with open(csv_path, "rb") as source_file:
             job = client.load_table_from_file(source_file, table_ref, job_config=job_config)
         job.result()  # Wait for the load job to complete
-        
-        # Log job details
-        print_and_log(f"Data loaded into BigQuery table '{table_id}'.")
-        print_and_log(f"Load job status: {job.state}")
-
-        if job.error_result:
-            print_and_log(f"Job failed with errors: {job.error_result}")
+        log_bigquery_job_details(job, table_id)
 
     except GoogleAPIError as e:
         print_and_log(f"Failed to load data into BigQuery: {e}")
         exit(1)
+
+def log_bigquery_job_details(job, table_id):
+    print_and_log(f"Data loaded into BigQuery table '{table_id}'.")
+    print_and_log(f"Load job status: {job.state}")
+
+    if job.error_result:
+        print_and_log(f"Job failed with errors: {job.error_result}")
 
 # Main script execution
 def main():
