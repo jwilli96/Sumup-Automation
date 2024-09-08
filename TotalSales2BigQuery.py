@@ -38,8 +38,9 @@ def fetch_transactions(api_key, start_date, end_date):
 
             next_link = next((link for link in transactions_response.get('links', []) if link['rel'] == 'next'), None)
             if next_link:
-                endpoint = next_link['href']  # Use the full URL for the next link
-                params = {}
+                # Properly construct the full URL for the next request
+                endpoint = f"{BASE_URL}/me/transactions/history?{next_link['href']}"
+                params = {}  # Clear params to avoid duplication in the URL
             else:
                 break
         else:
@@ -119,6 +120,7 @@ def upload_csv_to_bigquery(csv_path):
         ],
         skip_leading_rows=1,
         source_format=bigquery.SourceFormat.CSV,
+        write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE  # Overwrite the table data with new data
     )
 
     try:
