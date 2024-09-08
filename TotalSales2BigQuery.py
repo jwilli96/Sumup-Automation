@@ -17,12 +17,6 @@ def print_and_log(message):
     print(message)
     logging.debug(message)
 
-# Function to print the most recent 10 transactions
-def print_recent_10_transactions(transactions, stage):
-    print_and_log(f"\nMost recent 10 transactions at stage '{stage}':")
-    for transaction in transactions[-10:]:
-        print_and_log(json.dumps(transaction, indent=2))
-
 # Function to fetch transactions from SumUp API
 def fetch_transactions(api_key, start_date, end_date):
     BASE_URL = 'https://api.sumup.com/v0.1'
@@ -38,7 +32,6 @@ def fetch_transactions(api_key, start_date, end_date):
             if 'items' in transactions_response:
                 transactions = transactions_response['items']
                 all_transactions.extend(transactions)
-                print_recent_10_transactions(all_transactions, 'after fetching')  # Print after fetching transactions
             else:
                 print_and_log("The 'items' key was not found in the response.")
                 break
@@ -65,9 +58,7 @@ def save_transactions_to_csv(transactions, save_directory):
         df = pd.DataFrame(transactions)
         df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_convert('UTC')
         df = df[df['status'] == 'SUCCESSFUL']
-        print_recent_10_transactions(df.to_dict('records'), 'after filtering by status')  # Print after filtering by status
         df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
-        print_recent_10_transactions(df.to_dict('records'), 'after filtering by date range')  # Print after filtering by date range
         df['date'] = df['timestamp'].dt.strftime('%Y-%m-%d')
         df['time'] = df['timestamp'].dt.strftime('%H:%M:%S')
         df['day_of_week'] = df['timestamp'].dt.strftime('%A')
