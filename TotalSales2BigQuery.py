@@ -17,21 +17,6 @@ def print_and_log(message):
     print(message)
     logging.debug(message)
 
-# Function to print the most recent 10 transactions
-def print_recent_10_transactions(transactions, stage):
-    print_and_log(f"\nMost recent 10 transactions at stage '{stage}':")
-    for transaction in transactions[-10:]:
-        print_and_log(json.dumps(transaction, indent=2))
-
-# Function to print the last 10 rows of the CSV file
-def print_last_10_csv_rows(csv_path):
-    if os.path.exists(csv_path):
-        df = pd.read_csv(csv_path)
-        print_and_log(f"\nMost recent 10 rows in the CSV file {csv_path}:")
-        print_and_log(df.tail(10).to_string(index=False))
-    else:
-        print_and_log(f"CSV file {csv_path} does not exist.")
-
 # Function to fetch transactions from SumUp API
 def fetch_transactions(api_key, start_date, end_date):
     BASE_URL = 'https://api.sumup.com/v0.1'
@@ -47,7 +32,6 @@ def fetch_transactions(api_key, start_date, end_date):
             if 'items' in transactions_response:
                 transactions = transactions_response['items']
                 all_transactions.extend(transactions)
-                print_recent_10_transactions(all_transactions, 'after fetching')  # Print after fetching transactions
             else:
                 print_and_log("The 'items' key was not found in the response.")
                 break
@@ -74,9 +58,7 @@ def save_transactions_to_csv(transactions, save_directory):
         df = pd.DataFrame(transactions)
         df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_convert('UTC')
         df = df[df['status'] == 'SUCCESSFUL']
-        print_recent_10_transactions(df.to_dict('records'), 'after filtering by status')  # Print after filtering by status
         df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
-        print_recent_10_transactions(df.to_dict('records'), 'after filtering by date range')  # Print after filtering by date range
         df['date'] = df['timestamp'].dt.strftime('%Y-%m-%d')
         df['time'] = df['timestamp'].dt.strftime('%H:%M:%S')
         df['day_of_week'] = df['timestamp'].dt.strftime('%A')
@@ -90,8 +72,6 @@ def save_transactions_to_csv(transactions, save_directory):
         if os.path.exists(full_path):
             print_and_log(f"Transactions exported to {full_path}")
             print_and_log(f"File size: {os.path.getsize(full_path)} bytes")
-            # Print the last 10 rows of the CSV file
-            print_last_10_csv_rows(full_path)
         else:
             print_and_log("CSV file was not created successfully.")
         
@@ -143,6 +123,24 @@ def upload_csv_to_bigquery(csv_path):
             else:
                 print_and_log("All retry attempts failed. Exiting script.")
                 raise
+
+# Commenting out GCS upload function as it is not needed
+# def upload_to_gcs(bucket_name, source_file_name, destination_blob_name):
+#     # Use credentials file specified in GOOGLE_APPLICATION_CREDENTIALS environment variable
+#     credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+#     if not os.path.exists(credentials_path):
+#         print_and_log(f"Credentials file {credentials_path} not found.")
+#         exit(1)
+
+#     # Create Cloud Storage client using the credentials file
+#     credentials = Credentials.from_service_account_file(credentials_path)  # Corrected line
+#     client = storage.Client(credentials=credentials, project='sumup-integration')
+
+#     bucket = client.bucket(bucket_name)
+#     blob = bucket.blob(destination_blob_name)
+
+#     blob.upload_from_filename(source_file_name)
+#     print_and_log(f"File {source_file_name} uploaded to {destination_blob_name} in bucket {bucket_name}.")
 
 # Main script execution
 def main():
