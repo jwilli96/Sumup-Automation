@@ -2,8 +2,6 @@ import os
 import logging
 import requests
 import pandas as pd
-import json
-import time
 from datetime import datetime, timezone
 from google.cloud import bigquery
 from google.api_core.exceptions import GoogleAPIError
@@ -52,7 +50,7 @@ def fetch_transactions(api_key, start_date, end_date):
 # Function to save transactions to a CSV file
 def save_transactions_to_csv(transactions, save_directory):
     if transactions:
-        start_date = datetime(2023, 12, 3, tzinfo=timezone.utc)
+        start_date = datetime(2023, 12, 3, tzinfo=timezone.utc)  # Ensure dates are correct
         end_date = datetime.now(timezone.utc)
 
         df = pd.DataFrame(transactions)
@@ -83,6 +81,7 @@ def save_transactions_to_csv(transactions, save_directory):
 def print_last_10_csv_rows(csv_path):
     if os.path.exists(csv_path):
         df = pd.read_csv(csv_path)
+        # Ensure only the relevant columns are present
         if all(col in df.columns for col in ['date', 'time', 'day_of_week', 'amount']):
             print_and_log(f"\nMost recent 10 rows in the CSV file {csv_path}:")
             print_and_log(df[['date', 'time', 'day_of_week', 'amount']].tail(10).to_string(index=False))
@@ -91,18 +90,20 @@ def print_last_10_csv_rows(csv_path):
     else:
         print_and_log(f"CSV file {csv_path} does not exist.")
 
-# Function to upload CSV to BigQuery
+# Function to upload CSV to BigQuery and log job details
 def upload_csv_to_bigquery(csv_path):
+    # Use credentials file specified in GOOGLE_APPLICATION_CREDENTIALS environment variable
     credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
     if not os.path.exists(credentials_path):
         print_and_log(f"Credentials file {credentials_path} not found.")
         exit(1)
 
+    # Create BigQuery client using the credentials file
     credentials = Credentials.from_service_account_file(credentials_path)
     client = bigquery.Client(credentials=credentials, project='sumup-integration')
 
-    dataset_id = 'TotalSales'
-    table_id = 'TotalSalesTable'
+    dataset_id = 'TotalSales'  # Your dataset ID
+    table_id = 'TotalSalesTable'  # Only the table name
     table_ref = client.dataset(dataset_id).table(table_id)
 
     job_config = bigquery.LoadJobConfig(
@@ -116,18 +117,15 @@ def upload_csv_to_bigquery(csv_path):
         source_format=bigquery.SourceFormat.CSV,
     )
 
-    try:
-        with open(csv_path, "rb") as source_file:
-            job = client.load_table_from_file(source_file, table_ref, job_config=job_config)
-        job.result()  # Wait for the load job to complete
-        log_bigquery_job_details(job, table_id)
+    with open(csv_path, "rb") as source_file:
+        job = client.load_table_from_file(source_file, table_ref, job_config=job_config)
+    job.result()  # Wait for the load job to complete
 
-    except GoogleAPIError as e:
-        print_and_log(f"Failed to load data into BigQuery: {e}")
-        exit(1)
+    log_bigquery_job_details(job)
 
-def log_bigquery_job_details(job, table_id):
-    print_and_log(f"Data loaded into BigQuery table '{table_id}'.")
+def log_bigquery_job_details(job):
+    # Log job details
+    print_and_log(f"Data loaded into BigQuery table '{job.table_id}'.")
     print_and_log(f"Load job status: {job.state}")
 
     if job.error_result:
@@ -135,9 +133,6 @@ def log_bigquery_job_details(job, table_id):
 
 # Main script execution
 def main():
-    # Set up logging to also print to console
-    logging.basicConfig(level=logging.DEBUG, format='%(message)s')
-
     api_key = os.getenv('SUMUP_API_KEY')
     if not api_key:
         print_and_log("API key is missing.")
@@ -151,9 +146,6 @@ def main():
 
     if csv_path:
         upload_csv_to_bigquery(csv_path)
-        # Commented out GCS upload function call
-        # upload_to_gcs('your_bucket_name', csv_path, f"data/{os.path.basename(csv_path)}")
-        # Print the last 10 rows from the CSV file
         print_last_10_csv_rows(csv_path)
 
 if __name__ == "__main__":
