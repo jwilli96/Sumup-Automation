@@ -150,10 +150,13 @@ def log_bigquery_job_details(client, job):
         print_and_log(f"Created: {job_details.created}")
         print_and_log(f"Started: {job_details.started}")
         print_and_log(f"Ended: {job_details.ended}")
-        if job_details.statistics:
-            print_and_log(f"Total rows: {job_details.statistics.total_rows}")
-            print_and_log(f"Total bytes processed: {job_details.statistics.total_bytes_processed}")
-            print_and_log(f"Total bytes billed: {job_details.statistics.total_bytes_billed}")
+
+        # Use job_details.metadata for statistics
+        if job_details.metadata:
+            stats = job_details.metadata
+            print_and_log(f"Total rows: {stats.total_rows}")
+            print_and_log(f"Total bytes processed: {stats.total_bytes_processed}")
+            print_and_log(f"Total bytes billed: {stats.total_bytes_billed}")
         if job_details.configuration.load.source_uris:
             print_and_log(f"Source URI: {job_details.configuration.load.source_uris}")
     except GoogleAPIError as e:
