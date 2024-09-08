@@ -92,7 +92,7 @@ def print_last_10_csv_rows(csv_path):
     else:
         print_and_log(f"CSV file {csv_path} does not exist.")
 
-# Function to upload CSV to BigQuery with retries
+# Function to upload CSV to BigQuery without retries
 def upload_csv_to_bigquery(csv_path):
     # Use credentials file specified in GOOGLE_APPLICATION_CREDENTIALS environment variable
     credentials_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
@@ -119,22 +119,14 @@ def upload_csv_to_bigquery(csv_path):
         source_format=bigquery.SourceFormat.CSV,
     )
 
-    retries = 3
-    for attempt in range(retries):
-        try:
-            with open(csv_path, "rb") as source_file:
-                job = client.load_table_from_file(source_file, table_ref, job_config=job_config)
-            job.result()  # Wait for the load job to complete
-            print_and_log(f"Data loaded into BigQuery table '{table_id}'.")
-            break
-        except GoogleAPIError as e:
-            print_and_log(f"Attempt {attempt + 1} failed: {e}")
-            if attempt < retries - 1:
-                print_and_log("Retrying...")
-                time.sleep(5)  # Wait before retrying
-            else:
-                print_and_log("All retry attempts failed. Exiting script.")
-                raise
+    try:
+        with open(csv_path, "rb") as source_file:
+            job = client.load_table_from_file(source_file, table_ref, job_config=job_config)
+        job.result()  # Wait for the load job to complete
+        print_and_log(f"Data loaded into BigQuery table '{table_id}'.")
+    except GoogleAPIError as e:
+        print_and_log(f"Failed to load data into BigQuery: {e}")
+        exit(1)
 
 # Main script execution
 def main():
