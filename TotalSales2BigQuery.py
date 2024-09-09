@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from google.cloud import bigquery
 from google.api_core.exceptions import GoogleAPIError
 from google.oauth2.service_account import Credentials
+import pytz  # For timezone conversion
 
 # Set up logging
 log_file = 'script_output.log'
@@ -31,7 +32,6 @@ def fetch_transactions(api_key, start_date, end_date):
                 transactions = transactions_response['items']
                 all_transactions.extend(transactions)
                 print_and_log(f"Fetched {len(transactions)} transactions.")
-
             else:
                 print_and_log("The 'items' key was not found in the response.")
                 break
@@ -58,15 +58,23 @@ def save_transactions_to_csv(transactions, save_directory):
         end_date = datetime.now(timezone.utc)
 
         df = pd.DataFrame(transactions)
-        df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_convert('UTC')
+        
+        # Convert timestamp to datetime and then to BST
+        df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_localize('UTC').dt.tz_convert('Europe/London')
+        
+        # Filter transactions based on amount and time
         df = df[df['status'] == 'SUCCESSFUL']
         df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
-        df.drop_duplicates(inplace=True)  # Remove duplicate transactions
+        
+        # Drop duplicates
+        df.drop_duplicates(inplace=True)
+        
+        # Extract date and time details
         df['date'] = df['timestamp'].dt.strftime('%Y-%m-%d')
         df['time'] = df['timestamp'].dt.strftime('%H:%M:%S')
         df['day_of_week'] = df['timestamp'].dt.strftime('%A')
         df = df[['date', 'time', 'day_of_week', 'amount']]
-
+        
         os.makedirs(save_directory, exist_ok=True)
         csv_filename = f"TotalSales_{datetime.now().strftime('%Y%m%d')}.csv"
         full_path = os.path.join(save_directory, csv_filename)
