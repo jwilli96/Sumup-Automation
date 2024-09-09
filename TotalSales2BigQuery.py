@@ -6,7 +6,6 @@ from datetime import datetime, timezone
 from google.cloud import bigquery
 from google.api_core.exceptions import GoogleAPIError
 from google.oauth2.service_account import Credentials
-import pytz  # For timezone conversion
 
 # Set up logging
 log_file = 'script_output.log'
@@ -32,6 +31,7 @@ def fetch_transactions(api_key, start_date, end_date):
                 transactions = transactions_response['items']
                 all_transactions.extend(transactions)
                 print_and_log(f"Fetched {len(transactions)} transactions.")
+
             else:
                 print_and_log("The 'items' key was not found in the response.")
                 break
@@ -59,7 +59,8 @@ def save_transactions_to_csv(transactions, save_directory):
 
         df = pd.DataFrame(transactions)
         
-        # Convert timestamp to datetime and then to BST
+        # Convert timestamp to datetime and then to BST if it's timezone-aware
+        df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_localize(None)  # Remove any existing timezone info
         df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_localize('UTC').dt.tz_convert('Europe/London')
         
         # Filter transactions based on amount and time
