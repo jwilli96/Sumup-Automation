@@ -16,7 +16,7 @@ def print_and_log(message):
 # Function to process and clean the bookings data
 def process_bookings():
     # Set up the credentials
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
     creds = Credentials.from_service_account_file(os.getenv('GOOGLE_APPLICATION_CREDENTIALS'))
 
     # Authenticate and open the Google Sheet
