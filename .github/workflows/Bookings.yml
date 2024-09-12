@@ -2,9 +2,7 @@ name: Run Bookings Script
 
 on:
   schedule:
-    # Runs every 15 minutes from 9 AM to 4 PM on Thursday to Sunday
     - cron: '*/15 9-15 * * 4-6'
-    # Runs every 15 minutes from 9 AM to 4 PM on Monday
     - cron: '*/15 9-15 * * 1'
   workflow_dispatch:
 
@@ -25,7 +23,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install gspread oauth2client google-cloud-bigquery google-cloud-storage google-auth pandas
+          pip install gspread oauth2client pandas
 
       - name: Verify Environment Variables and Set Credentials
         run: |
@@ -40,16 +38,8 @@ jobs:
             echo "Credentials length: ${#GOOGLE_APPLICATION_CREDENTIALS}"
             echo "Credentials (partial): ${GOOGLE_APPLICATION_CREDENTIALS:0:100}"
           fi
-          if [ -z "$SUMUP_API_KEY" ]; then
-            echo "SumUp API key is missing or not set correctly."
-            exit 1
-          else
-            echo "SumUp API key is loaded successfully."
-            echo "API key length: ${#SUMUP_API_KEY}"
-          fi
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-          SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
 
       - name: Run the script
         run: |
@@ -62,7 +52,7 @@ jobs:
             exit 1
           fi
         env:
-          SUMUP_API_KEY: ${{ secrets.SUMUP_API_KEY }}
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
 
       - name: Print Directory Structure After Script Execution
         run: |
@@ -89,4 +79,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: csv-file
-          path: data/Bookings_*.csv  # Upload any CSV file generated in the 'data' directory
+          path: data/Bookings_*.csv
