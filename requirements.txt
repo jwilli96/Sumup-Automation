@@ -1,5 +1,8 @@
 requests
 pandas
-google-cloud-bigquery
+gspread
 google-cloud-storage
-google-auth
+google-auth  # New addition
+google-auth-oauthlib  # Only needed if you use OAuth2.0 flows
+google-cloud-bigquery
+oauth2client  # Can be removed if you no longer use it
