@@ -3,8 +3,9 @@ import logging
 import pandas as pd
 from datetime import datetime
 from google.cloud import bigquery
-from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials  # Correct import for Google Cloud authentication
 import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 # Set up logging
 log_file = 'script_output.log'
