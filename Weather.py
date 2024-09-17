@@ -29,7 +29,7 @@ def fetch_weather_data(lat, lon, start_date, end_date):
     weather_data = weather_data.fetch()
     return weather_data
 
-def filter_weather_data(data, start_hour=9, end_hour=16, weekdays=None):
+def filter_weather_data(data, start_hour=9, end_hour=18, weekdays=None):
     """Filter the weather data between specific hours and weekdays."""
     filtered_data = []
     if weekdays is None:
