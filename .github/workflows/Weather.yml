@@ -2,8 +2,8 @@ name: Run Weather Script
 
 on:
   schedule:
-    # Run every day at 2 a.m. UTC
-    - cron: '0 2 * * *'
+    # Run every 30 minutes between 7 a.m. and 9 p.m. UTC (8 a.m. to 10 p.m. London time)
+    - cron: '0,30 7-21 * * *'
   workflow_dispatch:
 
 jobs:
