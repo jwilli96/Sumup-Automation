@@ -5,10 +5,14 @@ from datetime import datetime
 from google.cloud import bigquery
 from google.oauth2.service_account import Credentials
 from meteostat import Point, Hourly
+import pytz
 
 # Coordinates for Brighton, UK
 LAT = 50.8225
 LON = -0.1372
+
+# Timezone for British Standard Time
+BST = pytz.timezone('Europe/London')
 
 # Set up logging
 log_file = 'script_output.log'
@@ -32,10 +36,11 @@ def filter_weather_data(data, start_hour=9, end_hour=16, weekdays=None):
         weekdays = {0, 1, 2, 3, 4, 5, 6}  # Default to all days
 
     for index, row in data.iterrows():
-        local_time = index
+        local_time = index.tz_localize('UTC').tz_convert(BST)  # Convert to BST
         if start_hour <= local_time.hour < end_hour and local_time.weekday() in weekdays:
             filtered_data.append({
-                "time": local_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "date": local_time.strftime("%Y-%m-%d"),
+                "time": local_time.strftime("%H:%M:%S"),
                 "temperature": row.get("temp", "N/A"),
                 "rain": row.get("prcp", 0),
                 "wind_speed": row.get("wspd", "N/A")
@@ -74,7 +79,8 @@ def upload_csv_to_bigquery(csv_path):
 
     job_config = bigquery.LoadJobConfig(
         schema=[
-            bigquery.SchemaField("time", "TIMESTAMP"),
+            bigquery.SchemaField("date", "DATE"),
+            bigquery.SchemaField("time", "TIME"),
             bigquery.SchemaField("temperature", "FLOAT64"),
             bigquery.SchemaField("rain", "FLOAT64"),
             bigquery.SchemaField("wind_speed", "FLOAT64"),
