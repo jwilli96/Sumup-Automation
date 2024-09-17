@@ -110,7 +110,7 @@ def log_bigquery_job_details(job):
         load_config = job_details['configuration']['load']
         print_and_log(f"Source URIs: {load_config.get('sourceUris', 'UNKNOWN')}")
 
-if __name__ == "__main__":
+def main():
     start_date = datetime(2023, 12, 3, 0, 0, 0)
     end_date = datetime.now()
     
@@ -118,7 +118,17 @@ if __name__ == "__main__":
 
     weather_data = get_weather_data(start_date, end_date)
     
-    csv_file_path = r'C:\Users\James.Williams\Sumup\Sales\weather_data.csv'
-    save_to_csv(weather_data, csv_file_path)
+    # Use environment variable or default to 'data'
+    save_directory = os.getenv('CSV_SAVE_DIRECTORY', 'data')
 
-    upload_csv_to_bigquery(csv_file_path)
+    # Define the CSV filename
+    csv_filename = f"weather_data_{datetime.now().strftime('%Y%m%d')}.csv"
+    full_path = os.path.join(save_directory, csv_filename)
+
+    save_to_csv(weather_data, full_path)
+
+    if full_path:
+        upload_csv_to_bigquery(full_path)
+
+if __name__ == "__main__":
+    main()
