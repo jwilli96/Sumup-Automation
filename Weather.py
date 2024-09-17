@@ -52,6 +52,8 @@ def get_weather_data(start_date, end_date):
 
 def save_to_csv(data, file_path):
     """Save the data to a CSV file."""
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
     df = pd.DataFrame(data)
     df.to_csv(file_path, index=False)
     print_and_log(f"Data saved to: {file_path}")
