@@ -116,7 +116,6 @@ def upload_csv_to_bigquery(csv_path):
             bigquery.SchemaField("Time", "TIME"),
             bigquery.SchemaField("Adult", "INTEGER"),
             bigquery.SchemaField("Child", "INTEGER"),
-            bigquery.SchemaField("Under_4", "INTEGER"),
             bigquery.SchemaField("Name", "STRING"),
             bigquery.SchemaField("Contact", "STRING"),
         ],
@@ -175,9 +174,9 @@ def print_last_10_csv_rows(csv_path):
     if os.path.exists(csv_path):
         df = pd.read_csv(csv_path)
         # Ensure only the relevant columns are present
-        if all(col in df.columns for col in ['Date', 'Time', 'Adult', 'Child', 'Under_4', 'Name', 'Contact']):
+        if all(col in df.columns for col in ['Date', 'Time', 'Adult', 'Child', 'Name', 'Contact']):
             print_and_log(f"\nMost recent 10 rows in the CSV file {csv_path}:")
-            print_and_log(df[['Date', 'Time', 'Adult', 'Child', 'Under_4', 'Name', 'Contact']].tail(10).to_string(index=False))
+            print_and_log(df[['Date', 'Time', 'Adult', 'Child', 'Name', 'Contact']].tail(10).to_string(index=False))
         else:
             print_and_log("The CSV file does not contain the required columns.")
     else:
