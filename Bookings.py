@@ -29,7 +29,7 @@ def process_bookings():
     sheet = spreadsheet.worksheet("Bookings")
 
     # Define expected headers to resolve header duplication issues
-    expected_headers = ['Date', 'Time', 'Adult', 'Child', 'Name', 'Contact']
+    expected_headers = ['Date', 'Time', 'Adult', 'Child', 'Under 4', 'Name', 'Contact']
 
     # Get all the data from the 'Bookings' tab using expected headers
     data = sheet.get_all_records(expected_headers=expected_headers)
@@ -42,6 +42,10 @@ def process_bookings():
     df['Time'] = pd.to_datetime(df['Time'], format='%H:%M', errors='coerce').dt.time
     df['Adult'] = pd.to_numeric(df['Adult'], errors='coerce').fillna(0).astype(int)
     df['Child'] = pd.to_numeric(df['Child'], errors='coerce').fillna(0).astype(int)
+    df['Under 4'] = pd.to_numeric(df['Under 4'], errors='coerce').fillna(0).astype(int)
+
+    # Rename the 'Under 4' column to 'Under_4'
+    df.rename(columns={'Under 4': 'Under_4'}, inplace=True)
 
     # Remove rows with invalid data
     df = df[df['Date'].notna() & df['Time'].notna() & (df['Adult'] >= 1)]
@@ -64,7 +68,7 @@ def process_bookings():
     df.drop_duplicates(inplace=True)
 
     # Ensure the DataFrame only contains the specified columns
-    required_columns = ['Date', 'Time', 'Adult', 'Child', 'Name', 'Contact']
+    required_columns = ['Date', 'Time', 'Adult', 'Child', 'Under_4', 'Name', 'Contact']
     df = df[required_columns]
 
     # Function to remove all whitespace from string values
@@ -116,6 +120,7 @@ def upload_csv_to_bigquery(csv_path):
             bigquery.SchemaField("Time", "TIME"),
             bigquery.SchemaField("Adult", "INTEGER"),
             bigquery.SchemaField("Child", "INTEGER"),
+            bigquery.SchemaField("Under_4", "INTEGER"),
             bigquery.SchemaField("Name", "STRING"),
             bigquery.SchemaField("Contact", "STRING"),
         ],
@@ -174,9 +179,9 @@ def print_last_10_csv_rows(csv_path):
     if os.path.exists(csv_path):
         df = pd.read_csv(csv_path)
         # Ensure only the relevant columns are present
-        if all(col in df.columns for col in ['Date', 'Time', 'Adult', 'Child', 'Name', 'Contact']):
+        if all(col in df.columns for col in ['Date', 'Time', 'Adult', 'Child', 'Under_4', 'Name', 'Contact']):
             print_and_log(f"\nMost recent 10 rows in the CSV file {csv_path}:")
-            print_and_log(df[['Date', 'Time', 'Adult', 'Child', 'Name', 'Contact']].tail(10).to_string(index=False))
+            print_and_log(df[['Date', 'Time', 'Adult', 'Child', 'Under_4', 'Name', 'Contact']].tail(10).to_string(index=False))
         else:
             print_and_log("The CSV file does not contain the required columns.")
     else:
