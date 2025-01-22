@@ -29,7 +29,7 @@ def process_bookings():
     sheet = spreadsheet.worksheet("Bookings")
 
     # Define expected headers to resolve header duplication issues
-    expected_headers = ['Date', 'Time', 'Adult', 'Child', 'Under 4', 'Name', 'Contact']
+    expected_headers = ['Date', 'Time', 'Adult', 'Child', 'Name', 'Contact']
 
     # Get all the data from the 'Bookings' tab using expected headers
     data = sheet.get_all_records(expected_headers=expected_headers)
