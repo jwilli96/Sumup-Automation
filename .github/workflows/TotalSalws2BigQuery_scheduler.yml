@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -86,7 +86,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload CSV file as an artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: csv-file
           path: data/TotalSales_*.csv  # Upload any CSV file generated in the 'data' directory
