@@ -1,6 +1,7 @@
 import os
 import logging
 import requests
+import numpy as np
 import pandas as pd
 from datetime import datetime, timezone
 from google.cloud import bigquery
