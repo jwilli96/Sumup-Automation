@@ -54,7 +54,7 @@ def fetch_transactions(api_key, start_date, end_date):
 # Function to save transactions to a CSV file
 def save_transactions_to_csv(transactions, save_directory):
     if transactions:
-        start_date = datetime(2023, 12, 3, tzinfo=timezone.utc)  # Ensure dates are correct
+        start_date = datetime(2024, 01, 1, tzinfo=timezone.utc)  # Ensure dates are correct
         end_date = datetime.now(timezone.utc)
 
         df = pd.DataFrame(transactions)
@@ -64,7 +64,7 @@ def save_transactions_to_csv(transactions, save_directory):
         df['timestamp'] = pd.to_datetime(df['timestamp']).dt.tz_localize('UTC').dt.tz_convert('Europe/London')
         
         # Filter transactions based on amount and time
-        df = df[df['status'] == 'SUCCESSFUL']
+        df = df[df['status'].isin(['SUCCESSFUL', 'REFUNDED'])]
         df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
         
         # Drop duplicates
