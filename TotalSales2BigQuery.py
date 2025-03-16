@@ -66,6 +66,9 @@ def save_transactions_to_csv(transactions, save_directory):
         # Filter transactions based on amount and time
         df = df[df['status'].isin(['SUCCESSFUL', 'REFUNDED'])]
         df = df[(df['timestamp'] >= start_date) & (df['timestamp'] <= end_date)]
+
+        # Make refunded amounts negative
+        df['amount'] = np.where(df['status'] == 'REFUNDED', df['amount'] * -1, df['amount'])
         
         # Drop duplicates
         df.drop_duplicates(inplace=True)
