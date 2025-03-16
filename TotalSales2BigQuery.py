@@ -54,7 +54,7 @@ def fetch_transactions(api_key, start_date, end_date):
 # Function to save transactions to a CSV file
 def save_transactions_to_csv(transactions, save_directory):
     if transactions:
-        start_date = datetime(2024, 01, 1, tzinfo=timezone.utc)  # Ensure dates are correct
+        start_date = datetime(2024, 1, 1, tzinfo=timezone.utc)  # Ensure dates are correct
         end_date = datetime.now(timezone.utc)
 
         df = pd.DataFrame(transactions)
