@@ -187,7 +187,7 @@ def main():
         print_and_log("API key is missing.")
         exit(1)
 
-    start_date = datetime(2023, 12, 3, tzinfo=timezone.utc)
+    start_date = datetime(2024, 12, 1, tzinfo=timezone.utc)
     end_date = datetime.now(timezone.utc)
 
     transactions = fetch_transactions(api_key, start_date, end_date)
@@ -199,3 +199,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
