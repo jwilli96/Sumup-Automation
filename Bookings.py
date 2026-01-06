@@ -25,7 +25,7 @@ def process_bookings():
 
     # Authenticate and open the Google Sheet
     client = gspread.authorize(creds)
-    spreadsheet = client.open("Logs 2025")
+    spreadsheet = client.open("Logs 2026")
     sheet = spreadsheet.worksheet("Bookings")
 
     # Define expected headers to resolve header duplication issues
